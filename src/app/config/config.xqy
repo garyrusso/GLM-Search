@@ -66,7 +66,7 @@ declare variable $c:ROXY-ROUTES :=
  : default application.
  : ***********************************************
  :)
-declare variable $c:DEFAULT-PAGE-LENGTH as xs:int := 5;
+declare variable $c:DEFAULT-PAGE-LENGTH as xs:int := 20;
 
 declare variable $c:SEARCH-OPTIONS :=
   <options xmlns="http://marklogic.com/appservices/search">
@@ -74,28 +74,28 @@ declare variable $c:SEARCH-OPTIONS :=
     <term>
       <term-option>case-insensitive</term-option>
     </term>
-    <constraint name="TITLE">
+    <constraint name="ImportedUnitCode">
       <range collation="http://marklogic.com/collation/" type="xs:string">
         <facet-option>frequency-order</facet-option>
         <facet-option>descending</facet-option>
         <facet-option>limit=10</facet-option>
-        <element ns="" name="TITLE"/>
+        <element ns="http://marklogic.com/xdmp/json/basic" name="ImportedUnitCode"/>
       </range>
     </constraint>
-    <constraint name="SPEAKER">
+    <constraint name="ImportedAccountCode">
       <range collation="http://marklogic.com/collation/" type="xs:string">
         <facet-option>frequency-order</facet-option>
         <facet-option>descending</facet-option>
         <facet-option>limit=10</facet-option>
-        <element ns="" name="SPEAKER"/>
+        <element ns="http://marklogic.com/xdmp/json/basic" name="ImportedAccountCode"/>
       </range>
     </constraint>
-    <constraint name="PERSONA">
+    <constraint name="EndingBalance">
       <range collation="http://marklogic.com/collation/" type="xs:string">
         <facet-option>frequency-order</facet-option>
         <facet-option>descending</facet-option>
         <facet-option>limit=10</facet-option>
-        <element ns="" name="PERSONA"/>
+        <element ns="http://marklogic.com/xdmp/json/basic" name="EndingBalance"/>
       </range>
     </constraint>
     <return-results>true</return-results>
