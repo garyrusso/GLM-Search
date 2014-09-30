@@ -75,29 +75,43 @@ declare variable $c:SEARCH-OPTIONS :=
       <term-option>case-insensitive</term-option>
     </term>
     <constraint name="ImportedUnitCode">
-      <range collation="http://marklogic.com/collation/" type="xs:string">
-        <facet-option>frequency-order</facet-option>
+      <range type="xs:string">
+        <bucket ge="RU01501" name="RU-1500s">RU-1500s</bucket>
+        <bucket lt="RU01501" ge="RU01001" name="RU-1000s">RU-1000s</bucket>
+        <bucket lt="RU01001" ge="RU00501" name="RU-500s">RU-500s</bucket>
+        <bucket lt="RU00501" name="RU-0s">RU-0s</bucket>
+        <element ns="http://marklogic.com/xdmp/json/basic" name="ImportedUnitCode"/>
         <facet-option>descending</facet-option>
         <facet-option>limit=10</facet-option>
-        <element ns="http://marklogic.com/xdmp/json/basic" name="ImportedUnitCode"/>
       </range>
     </constraint>
     <constraint name="ImportedAccountCode">
-      <range collation="http://marklogic.com/collation/" type="xs:string">
-        <facet-option>frequency-order</facet-option>
-        <facet-option>descending</facet-option>
-        <facet-option>limit=10</facet-option>
+      <range type="xs:string">
+        <bucket ge="AC01501" name="AC-1500s">AC-1500s</bucket>
+        <bucket lt="AC01501" ge="AC01001" name="AC-1000s">AC-1000s</bucket>
+        <bucket lt="AC01001" ge="AC00501" name="AC-500s">AC-500s</bucket>
+        <bucket lt="AC00501" name="AC-0s">AC-0s</bucket>
         <element ns="http://marklogic.com/xdmp/json/basic" name="ImportedAccountCode"/>
-      </range>
-    </constraint>
-    <constraint name="EndingBalance">
-      <range collation="http://marklogic.com/collation/" type="xs:string">
-        <facet-option>frequency-order</facet-option>
         <facet-option>descending</facet-option>
         <facet-option>limit=10</facet-option>
-        <element ns="http://marklogic.com/xdmp/json/basic" name="EndingBalance"/>
       </range>
     </constraint>
+    <constraint name="Ending Balances">
+      <range type="xs:float">
+        <bucket ge="9000" name="9000s">9000s</bucket>
+        <bucket lt="9000" ge="8000" name="8000s">8000s</bucket>
+        <bucket lt="8000" ge="7000" name="7000s">7000s</bucket>
+        <bucket lt="7000" ge="6000" name="6000s">6000s</bucket>
+        <bucket lt="6000" ge="5000" name="5000s">5000s</bucket>
+        <bucket lt="5000" ge="4000" name="4000s">4000s</bucket>
+        <bucket lt="4000" ge="3000" name="3000s">3000s</bucket>
+        <bucket lt="3000" ge="2000" name="2000s">2000s</bucket>
+        <bucket lt="1000" name="1000s">1000s</bucket>
+        <element ns="http://marklogic.com/xdmp/json/basic" name="EndingBalance"/>
+        <facet-option>descending</facet-option>
+        <facet-option>limit=10</facet-option>
+      </range>
+    </constraint> 
     <return-results>true</return-results>
     <return-query>true</return-query>
   </options>;
