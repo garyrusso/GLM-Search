@@ -63,11 +63,11 @@ declare variable $q as xs:string? := vh:get("q");
         { $view }
       </div>
       <div class="footer" arcsize="0 0 5 5"><span class="copyright">&copy; 2015, Thomson Reuters, All Rights Reserved.</span>
-        <a href="/page/help">GLM Search Help</a>
+        <a href="/about">GLM Search Help</a>
         <span class="pipe"> </span>
-        <a href="/page/contact">Contact Us</a>
+        <a href="/about">Contact Us</a>
         <span class="pipe"> </span>
-        <a href="/page/terms">Terms of Use</a>
+        <a href="/about">Terms of Use</a>
       </div>
     </div>
   </body>

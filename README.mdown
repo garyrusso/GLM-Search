@@ -6,7 +6,33 @@ It also shows the ability to do wildcard search with GLM data.
 ## Deploy
 * $ ml local bootstrap
 * $ ml local modules
-* $ ml local deply content
+* $ ml local deploy content
+
+Content deploy copies zip file to database. Need to run the following snippet in qconsole to inflate data.
+
+<pre>
+
+declare namespace zip="xdmp:zip";
+
+let $_ :=
+  for $x in xdmp:zip-manifest(fn:doc("/files.zip"))//zip:part/text()
+    let $doc :=
+      xdmp:zip-get(fn:doc("/files.zip"), $x,
+        <options xmlns="xdmp:zip-get">
+          <format>xml</format>
+        </options>
+      )
+  
+  let $uri := fn:replace($x, "test/", "/glm/")
+    return
+      xdmp:document-insert($uri, $doc)
+
+let $_ := xdmp:document-delete("/files.zip")
+
+return "done"
+
+</pre>
+
 
 # Roxy
 Roxy (RObust XQuerY Framework) is a lightweight framework for quickly developing well-structured, easily maintained XQuery applications. Roxy was heavily inspired by Ruby On Rails and CakePHP.
