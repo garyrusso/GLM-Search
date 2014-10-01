@@ -1,7 +1,6 @@
 # GLM Demo
 ## Purpose
-This app is to show how to extend the REST API and use the deployer.
-It also shows the ability to do wildcard search with GLM data.
+This app is to show how to extend the REST API. It also shows how to do wildcard searches with schema-agnostic data.
 
 ## Deploy
 * $ ml local bootstrap
