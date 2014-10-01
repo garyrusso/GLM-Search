@@ -74,7 +74,7 @@ declare variable $c:SEARCH-OPTIONS :=
     <term>
       <term-option>case-insensitive</term-option>
     </term>
-    <constraint name="ImportedUnitCode">
+    <constraint name="ImportedUnitCodes">
       <range type="xs:string">
         <bucket ge="RU01501" name="RU-1500s">RU-1500s</bucket>
         <bucket lt="RU01501" ge="RU01001" name="RU-1000s">RU-1000s</bucket>
@@ -85,7 +85,7 @@ declare variable $c:SEARCH-OPTIONS :=
         <facet-option>limit=10</facet-option>
       </range>
     </constraint>
-    <constraint name="ImportedAccountCode">
+    <constraint name="ImportedAccountCodes">
       <range type="xs:string">
         <bucket ge="AC01501" name="AC-1500s">AC-1500s</bucket>
         <bucket lt="AC01501" ge="AC01001" name="AC-1000s">AC-1000s</bucket>
@@ -111,6 +111,21 @@ declare variable $c:SEARCH-OPTIONS :=
         <facet-option>descending</facet-option>
         <facet-option>limit=10</facet-option>
       </range>
+    </constraint>
+    <constraint name="Id">
+      <word>
+        <element ns="http://marklogic.com/xdmp/json/basic" name="Id"/>
+      </word>
+    </constraint>
+    <constraint name="ImportedAccountCode">
+      <word>
+        <element ns="http://marklogic.com/xdmp/json/basic" name="ImportedAccountCode"/>
+      </word>
+    </constraint>
+    <constraint name="ImportedUnitCode">
+      <word>
+        <element ns="http://marklogic.com/xdmp/json/basic" name="ImportedUnitCode"/>
+      </word>
     </constraint>
     <transform-results apply="snippet">
       <preferred-elements>
