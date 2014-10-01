@@ -66,7 +66,7 @@ declare variable $c:ROXY-ROUTES :=
  : default application.
  : ***********************************************
  :)
-declare variable $c:DEFAULT-PAGE-LENGTH as xs:int := 20;
+declare variable $c:DEFAULT-PAGE-LENGTH as xs:int := 10;
 
 declare variable $c:SEARCH-OPTIONS :=
   <options xmlns="http://marklogic.com/appservices/search">
@@ -96,7 +96,7 @@ declare variable $c:SEARCH-OPTIONS :=
         <facet-option>limit=10</facet-option>
       </range>
     </constraint>
-    <constraint name="Ending Balances">
+    <constraint name="EndingBalances">
       <range type="xs:float">
         <bucket ge="9000" name="9000s">9000s</bucket>
         <bucket lt="9000" ge="8000" name="8000s">8000s</bucket>
@@ -111,7 +111,52 @@ declare variable $c:SEARCH-OPTIONS :=
         <facet-option>descending</facet-option>
         <facet-option>limit=10</facet-option>
       </range>
-    </constraint> 
+    </constraint>
+    <transform-results apply="snippet">
+      <preferred-elements>
+        <element ns="http://marklogic.com/xdmp/json/basic" name="Id"/>
+        <element ns="http://marklogic.com/xdmp/json/basic" name="ImportFileId"/>
+        <element ns="http://marklogic.com/xdmp/json/basic" name="ImportedUnitCode"/>
+        <element ns="http://marklogic.com/xdmp/json/basic" name="ImportedAccountCode"/>
+        <element ns="http://marklogic.com/xdmp/json/basic" name="BeginningBalance"/>
+        <element ns="http://marklogic.com/xdmp/json/basic" name="EndingBalance"/>
+      </preferred-elements>
+      <max-matches>2</max-matches>
+      <max-snippet-chars>150</max-snippet-chars>
+      <per-match-tokens>20</per-match-tokens>
+    </transform-results>
+    <operator name="results">
+      <state name="compact">
+        <transform-results apply="snippet">
+          <preferred-elements>
+            <element ns="http://marklogic.com/xdmp/json/basic" name="Id"/>
+            <element ns="http://marklogic.com/xdmp/json/basic" name="ImportFileId"/>
+            <element ns="http://marklogic.com/xdmp/json/basic" name="ImportedUnitCode"/>
+            <element ns="http://marklogic.com/xdmp/json/basic" name="ImportedAccountCode"/>
+            <element ns="http://marklogic.com/xdmp/json/basic" name="BeginningBalance"/>
+            <element ns="http://marklogic.com/xdmp/json/basic" name="EndingBalance"/>
+          </preferred-elements>
+          <max-matches>2</max-matches>
+          <max-snippet-chars>150</max-snippet-chars>
+          <per-match-tokens>20</per-match-tokens>
+        </transform-results>
+      </state>
+      <state name="detailed">
+        <transform-results apply="snippet">
+          <preferred-elements>
+            <element ns="http://marklogic.com/xdmp/json/basic" name="Id"/>
+            <element ns="http://marklogic.com/xdmp/json/basic" name="ImportFileId"/>
+            <element ns="http://marklogic.com/xdmp/json/basic" name="ImportedUnitCode"/>
+            <element ns="http://marklogic.com/xdmp/json/basic" name="ImportedAccountCode"/>
+            <element ns="http://marklogic.com/xdmp/json/basic" name="BeginningBalance"/>
+            <element ns="http://marklogic.com/xdmp/json/basic" name="EndingBalance"/>
+          </preferred-elements>
+          <max-matches>2</max-matches>
+          <max-snippet-chars>400</max-snippet-chars>
+          <per-match-tokens>30</per-match-tokens>
+        </transform-results>
+      </state>
+    </operator>
     <return-results>true</return-results>
     <return-query>true</return-query>
   </options>;
@@ -121,13 +166,13 @@ declare variable $c:SEARCH-OPTIONS :=
  :)
 declare variable $c:LABELS :=
   <labels xmlns="http://marklogic.com/xqutils/labels">
-    <label key="TITLE">
-      <value xml:lang="en">Title</value>
+    <label key="ImportedUnitCode">
+      <value xml:lang="en">Imported Unit Code</value>
     </label>
-    <label key="SPEAKER">
-      <value xml:lang="en">Speaker</value>
+    <label key="ImportedAccountCode">
+      <value xml:lang="en">Imported Account Code</value>
     </label>
-    <label key="PERSONA">
-      <value xml:lang="en">Persona</value>
+    <label key="EndingBalances">
+      <value xml:lang="en">Ending Balances</value>
     </label>
   </labels>;

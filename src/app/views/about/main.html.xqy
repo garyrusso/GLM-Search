@@ -10,10 +10,6 @@ declare option xdmp:mapping "false";
   <tr><td width="800" valign="top">&nbsp;</td></tr>
   <tr><td valign="top" align="center">GLM Demo - Wildcard Search with schema-agnostic data.</td></tr>
   <tr><td valign="top">&nbsp;</td></tr>
-  <tr><td valign="top" align="center">GLM Data</td></tr>
-  <tr><td valign="top">&nbsp;</td></tr>
-  <tr><td valign="top" align="center">Brought to you by <b>The Semantic Operators!</b></td></tr>
-  <tr><td valign="top">&nbsp;</td></tr>
   <tr><td valign="top">&nbsp;</td></tr>
   <tr>
   <td valign="top" align="center">
