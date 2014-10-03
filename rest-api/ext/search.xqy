@@ -47,7 +47,11 @@ function tr:get(
       map:put($context,"output-types","application/xml")
     )
 
-  let $options :=
+  let $options  := $c:REST-SEARCH-OPTIONS
+
+  let $options1 := $c:SEARCH-OPTIONS
+
+  let $options2 :=
       <options xmlns="http://marklogic.com/appservices/search">
         <constraint name="Id">
           <word>

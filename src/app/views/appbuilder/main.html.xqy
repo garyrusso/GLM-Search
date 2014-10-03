@@ -64,7 +64,7 @@ declare function local:transform-snippet($nodes as node()*)
           attribute class { fn:local-name($n) },
           <table border="0" width="100%">
             {
-              if (($q eq "") or (fn:string-length($sdoc1/@uri) eq 0)) then "" else
+              if (fn:string-length($sdoc1/@uri) eq 0) then "" else
               (
                 <tr>
                   <td width="105">Relevance:</td>
