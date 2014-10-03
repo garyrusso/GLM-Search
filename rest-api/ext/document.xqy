@@ -1,6 +1,6 @@
 xquery version "1.0-ml";
 
-module namespace tr = "http://marklogic.com/rest-api/resource/trans";
+module namespace tr = "http://marklogic.com/rest-api/resource/document";
 
 declare namespace roxy = "http://marklogic.com/roxy";
 
