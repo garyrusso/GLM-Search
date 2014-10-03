@@ -64,19 +64,19 @@ declare function local:transform-snippet($nodes as node()*)
           attribute class { fn:local-name($n) },
           <table border="0" width="100%">
             {
-              if (($q eq "") or (fn:string-length($n/../@uri) eq 0)) then "" else
+              if (($q eq "") or (fn:string-length($sdoc1/@uri) eq 0)) then "" else
               (
                 <tr>
                   <td width="105">Relevance:</td>
-                  <td>{fn:concat(fn:format-number($n/../@confidence * 100, "#,###"), "%")}</td>
+                  <td>{fn:concat(fn:format-number($sdoc1/@confidence * 100, "#,###"), "%")}</td>
                   <td align="right"><a target="_blank" href="view.xml?uri={$sdoc1/@uri}">Open XML</a></td>
                 </tr>,
-                <tr><td width="145" valign="top">Id</td><td colspan="2" valign="top">{$sdoc3/*:json/*:Id/text()}</td></tr>,
-                <tr><td width="145" valign="top">Import File Id</td><td colspan="2" valign="top">{$sdoc3/*:json/*:ImportFileId/text()}</td></tr>,
-                <tr><td width="145" valign="top">Imported Unit Code</td><td colspan="2" valign="top">{$sdoc3/*:json/*:ImportedUnitCode/text()}</td></tr>,
-                <tr><td width="145" valign="top">Imported Account Code</td><td colspan="2" valign="top">{$sdoc3/*:json/*:ImportedAccountCode/text()}</td></tr>,
-                <tr><td width="145" valign="top">Beginning Balance</td><td colspan="2" valign="top">{$sdoc3/*:json/*:BeginningBalance/text()}</td></tr>,
-                <tr><td width="145" valign="top">Ending Balance</td><td colspan="2" valign="top">{$sdoc3/*:json/*:EndingBalance/text()}</td></tr>
+                <tr><td width="145" valign="top">Id</td><td colspan="2" valign="top">{$sdoc3/*:origin/*:meta/*:id/text()}</td></tr>,
+                <tr><td width="145" valign="top">Import File Id</td><td colspan="2" valign="top">{$sdoc3/*:origin/*:meta/*:importFileId/text()}</td></tr>,
+                <tr><td width="145" valign="top">Imported Unit Code</td><td colspan="2" valign="top">{$sdoc3/*:origin/*:meta/*:importedUnitCode/text()}</td></tr>,
+                <tr><td width="145" valign="top">Imported Account Code</td><td colspan="2" valign="top">{$sdoc3/*:origin/*:meta/*:importedAccountCode/text()}</td></tr>,
+                <tr><td width="145" valign="top">Beginning Balance</td><td colspan="2" valign="top">{$sdoc3/*:origin/*:meta/*:beginningBalance/text()}</td></tr>,
+                <tr><td width="145" valign="top">Ending Balance</td><td colspan="2" valign="top">{$sdoc3/*:origin/*:meta/*:endingBalance/text()}</td></tr>
               )
             }
             <tr>
@@ -93,14 +93,14 @@ declare function local:transform-snippet($nodes as node()*)
           {
             <table border="0" width="100%">
               <tr>
-                <td width="145" valign="top">Id</td><td valign="top">{$sdoc4/*:json/*:Id/text()}</td>
+                <td width="145" valign="top">Id</td><td valign="top">{$sdoc2/*:origin/*:meta/*:id/text()}</td>
                 <td width="10%" align="right" valign="top"><a target="_blank" href="view.xml?uri={$sdoc2/@uri}">Open XML</a></td>
               </tr>
-              <tr><td width="145" valign="top">Import File Id</td><td colspan="2" valign="top">{$sdoc4/*:json/*:ImportFileId/text()}</td></tr>
-              <tr><td width="145" valign="top">Imported Unit Code</td><td colspan="2" valign="top">{$sdoc4/*:json/*:ImportedUnitCode/text()}</td></tr>
-              <tr><td width="145" valign="top">Imported Account Code</td><td colspan="2" valign="top">{$sdoc4/*:json/*:ImportedAccountCode/text()}</td></tr>
-              <tr><td width="145" valign="top">Beginning Balance</td><td colspan="2" valign="top">{$sdoc4/*:json/*:BeginningBalance/text()}</td></tr>
-              <tr><td width="145" valign="top">Ending Balance</td><td colspan="2" valign="top">{$sdoc4/*:json/*:EndingBalance/text()}</td></tr>
+              <tr><td width="145" valign="top">Import File Id</td><td colspan="2" valign="top">{$sdoc4//*:importFileId/text()}</td></tr>
+              <tr><td width="145" valign="top">Imported Unit Code</td><td colspan="2" valign="top">{$sdoc4//*:importedUnitCode/text()}</td></tr>
+              <tr><td width="145" valign="top">Imported Account Code</td><td colspan="2" valign="top">{$sdoc4//*:importedAccountCode/text()}</td></tr>
+              <tr><td width="145" valign="top">Beginning Balance</td><td colspan="2" valign="top">{$sdoc4//*:beginningBalance/text()}</td></tr>
+              <tr><td width="145" valign="top">Ending Balance</td><td colspan="2" valign="top">{$sdoc4//*:endingBalance/text()}</td></tr>
             </table>
           }
 };

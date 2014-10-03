@@ -17,5 +17,7 @@ let $doc :=
   )
 
 return
-  (xdmp:set-response-content-type("text/xml; charset=utf-8"), $doc)
-
+(:  xdmp:set-response-content-type("text/xml; charset=utf-8"), $doc) :)
+<doc>
+{$doc}
+</doc>

@@ -4,6 +4,32 @@ module namespace tr = "http://marklogic.com/rest-api/resource/trans";
 
 declare namespace roxy = "http://marklogic.com/roxy";
 
+declare namespace tax = "http://tax.thomsonreuters.com";
+
+declare variable $NS := "http://tax.thomsonreuters.com";
+
+declare variable $CONTENT-DIR := "/glmtest/";
+
+declare variable $TIDY-OPTIONS as element () :=
+                 <options xmlns="xdmp:tidy">
+                   <input-xml>yes</input-xml>
+                 </options>;
+
+(:~
+ : Centralized Logging
+ :
+ : @param $file
+ : @param $message
+ :)
+declare function tr:log($file as xs:string, $level as xs:string, $message as xs:string)
+{
+  let $idateTime := xs:string(fn:current-dateTime())
+  let $dateTime  := fn:substring($idateTime, 1, fn:string-length($idateTime)-6)
+
+  return
+    xdmp:log(fn:concat("1......... LOGGING $file: ", $file, " | level: ", $level, " | message: ", $message, " | dateTime: ", $dateTime))
+};
+
 (: 
  : To add parameters to the functions, specify them in the params annotations. 
  : Example
@@ -50,8 +76,31 @@ function tr:post(
     $input   as document-node()*
 ) as document-node()*
 {
-  map:put($context, "output-types", "text/html"),
-  xdmp:set-response-code(200, "OK"),
+  let $output-types := map:put($context,"output-types","application/xml")
+
+  let $doc :=  document { $input } (: xdmp:tidy(document { $input }, $TIDY-OPTIONS) [2] :)
+
+  let $uri := fn:concat($CONTENT-DIR, xdmp:hash64($doc), xdmp:random(), ".xml")
+
+  return
+    if ($doc) then
+      try
+      {
+        xdmp:document-insert($uri, $doc, xdmp:default-permissions(), ("glm")),
+        document {
+          <status>Success</status>
+        }
+      }
+      catch ($e)
+      {
+        tr:log($uri, "ERROR", $e/error:message/text())
+      }
+      else
+        document {
+          <status>Input Error</status>
+        }
+
+(:
   document {
     <div>
       <div>
@@ -64,6 +113,7 @@ function tr:post(
       </div>
     </div>
   }
+:)
 };
 
 (:
