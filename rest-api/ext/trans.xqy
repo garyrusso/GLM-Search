@@ -86,7 +86,7 @@ function tr:put(
       if (fn:not(fn:empty($newdoc/node()))) then
         try
         {
-          xdmp:document-insert($uri, $doc, xdmp:default-permissions(), ("RESTful")),
+          xdmp:document-insert($uri, $newdoc, xdmp:default-permissions(), ("RESTful")),
           tr:log($uri, "INFO", fn:concat("INFO: Document was updated: ", $uri)),
           document {
             <status>{fn:concat("Update Success: ", $uri)}</status>
