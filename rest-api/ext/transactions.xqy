@@ -2,7 +2,11 @@ xquery version "1.0-ml";
 
 module namespace tr = "http://marklogic.com/rest-api/resource/transactions";
 
+import module namespace admin = "http://marklogic.com/xdmp/admin" at "/MarkLogic/admin.xqy";
+
 declare namespace roxy = "http://marklogic.com/roxy";
+
+declare variable $NS := "http://tax.thomsonreuters.com";
 
 (: 
  : To add parameters to the functions, specify them in the params annotations. 
@@ -20,9 +24,27 @@ function tr:get(
   $params  as map:map
 ) as document-node()*
 {
-  map:put($context, "output-types", "application/xml"),
-  xdmp:set-response-code(200, "OK"),
-  document { "GET called on the ext service extension" }
+  let $output := map:put($context, "output-types", "application/xml")
+
+  let $config    := admin:get-configuration()
+  let $transList := xdmp:host-status(admin:get-host-ids($config)[1])/*:transactions/*:transaction
+
+  let $ids :=
+      element { fn:QName($NS, "txids") }
+      {
+        for $doc in $transList
+          return
+            element { fn:QName($NS, "txid") }
+            {
+              $doc/*:transaction-state/text()||": "||$doc/*:host-id/text()||"_"||$doc/*:transaction-id/text()
+            }
+      }
+
+  return
+    document
+    {
+      <status>{($ids, $transList)}</status>
+    }
 };
 
 (:
@@ -37,7 +59,10 @@ function tr:put(
 {
   map:put($context, "output-types", "application/xml"),
   xdmp:set-response-code(200, "OK"),
-  document { "PUT called on the ext service extension" }
+  document
+  {
+    <status>PUT called on the ext service extension</status>
+  }
 };
 
 (:
@@ -52,7 +77,10 @@ function tr:post(
 {
   map:put($context, "output-types", "application/xml"),
   xdmp:set-response-code(200, "OK"),
-  document { "POST called on the ext service extension" }
+  document
+  {
+    <status>POST called on the ext service extension</status>
+  }
 };
 
 (:
@@ -66,5 +94,8 @@ function tr:delete(
 {
   map:put($context, "output-types", "application/xml"),
   xdmp:set-response-code(200, "OK"),
-  document { "DELETE called on the ext service extension" }
+  document
+  {
+    <status>DELETE called on the ext service extension</status>
+  }
 };

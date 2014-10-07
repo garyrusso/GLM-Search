@@ -1,11 +1,24 @@
 # GLM Demo
 ## Purpose
-This app is to show how to extend the REST API. It also shows how to do wildcard searches with schema-agnostic data.
+This app is to show how to do the following.
+
+1. Extend the REST API
+1. Configure and test leading wildcard searches
+1. Best Approaches for Schema-agnostic data
+1. Multi-Statement ACID Transactions
+1. Best Approaches for storing and retrieving spreadsheet data.
+1. Bi-Temporal Data Structure and Query used for Point-In-Time Audits
+1. Triplestore Document Linking
+1. Triplestore Queries for Forward and Backward Chain Inferencing
+
 
 ## Deploy
 * $ ml local bootstrap
 * $ ml local modules
 * $ ml local deploy content
+
+* $ ml extend tr:transactions
+
 
 Content deploy copies zip file to database. Need to run the following snippet in qconsole to inflate data.
 
