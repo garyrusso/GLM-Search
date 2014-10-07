@@ -25,10 +25,15 @@ declare function olib:rest-origin-snippet(
       element
       { fn:QName($NS, "result-element") }
       {
-        element { fn:QName($NS, "element-name") } { "id" },
-        element { fn:QName($NS, "element-value") } { $result/*:origin/*:meta/*:id/text() }
+        element { fn:QName($NS, "element-name") } { "type" },
+        element { fn:QName($NS, "element-value") } { $result//*:meta/*:type/text() }
       },
-
+      element
+      { fn:QName($NS, "result-element") }
+      {
+        element { fn:QName($NS, "element-name") } { "id" },
+        element { fn:QName($NS, "element-value") } { $result//*:meta/*:id/text() }
+      },
       element
       { fn:QName($NS, "result-element") }
       {
@@ -87,6 +92,7 @@ declare function olib:origin-snippet(
             <table boder="1">
               <tr><td width="145" valign="top">namespace-uri</td><td colspan="2" valign="top">{fn:namespace-uri($result)}</td></tr>,
               <tr><td width="145" valign="top">name</td><td colspan="2" valign="top">{fn:name($result)}</td></tr>,
+              <tr><td width="145" valign="top">Type</td><td colspan="2" valign="top">{$snipdoc/*:origin/*:meta/*:type/text()}</td></tr>,
               <tr><td width="145" valign="top">Id</td><td colspan="2" valign="top">{$snipdoc/*:origin/*:meta/*:id/text()}</td></tr>,
               <tr><td width="145" valign="top">Import File Id</td><td colspan="2" valign="top">{$snipdoc/*:origin/*:meta/*:importFileId/text()}</td></tr>,
               <tr><td width="145" valign="top">Imported Unit Code</td><td colspan="2" valign="top">{$snipdoc/*:origin/*:meta/*:importedUnitCode/text()}</td></tr>,

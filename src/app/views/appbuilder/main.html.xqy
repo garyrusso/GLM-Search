@@ -71,7 +71,8 @@ declare function local:transform-snippet($nodes as node()*)
                   <td>{fn:concat(fn:format-number($sdoc1/@confidence * 100, "#,###"), "%")}</td>
                   <td align="right"><a target="_blank" href="view.xml?uri={$sdoc1/@uri}">Open XML</a></td>
                 </tr>,
-                <tr><td width="145" valign="top">Id</td><td colspan="2" valign="top">{$sdoc3/*:origin/*:meta/*:id/text()}</td></tr>,
+                <tr><td width="145" valign="top">Type</td><td colspan="2" valign="top">{$sdoc3//*:meta/*:type/text()}</td></tr>,
+                <tr><td width="145" valign="top">Id</td><td colspan="2" valign="top">{$sdoc3//*:meta/*:id/text()}</td></tr>,
                 <tr><td width="145" valign="top">Import File Id</td><td colspan="2" valign="top">{$sdoc3/*:origin/*:meta/*:importFileId/text()}</td></tr>,
                 <tr><td width="145" valign="top">Imported Unit Code</td><td colspan="2" valign="top">{$sdoc3/*:origin/*:meta/*:importedUnitCode/text()}</td></tr>,
                 <tr><td width="145" valign="top">Imported Account Code</td><td colspan="2" valign="top">{$sdoc3/*:origin/*:meta/*:importedAccountCode/text()}</td></tr>,
@@ -93,9 +94,10 @@ declare function local:transform-snippet($nodes as node()*)
           {
             <table border="0" width="100%">
               <tr>
-                <td width="145" valign="top">Id</td><td valign="top">{$sdoc2/*:origin/*:meta/*:id/text()}</td>
+                <td width="145" valign="top">Id</td><td valign="top">{$sdoc4/*:origin/*:meta/*:id/text()}</td>
                 <td width="10%" align="right" valign="top"><a target="_blank" href="view.xml?uri={$sdoc2/@uri}">Open XML</a></td>
               </tr>
+              <tr><td width="145" valign="top">Type</td><td colspan="2" valign="top">{$sdoc4//*:type/text()}</td></tr>,
               <tr><td width="145" valign="top">Import File Id</td><td colspan="2" valign="top">{$sdoc4//*:importFileId/text()}</td></tr>
               <tr><td width="145" valign="top">Imported Unit Code</td><td colspan="2" valign="top">{$sdoc4//*:importedUnitCode/text()}</td></tr>
               <tr><td width="145" valign="top">Imported Account Code</td><td colspan="2" valign="top">{$sdoc4//*:importedAccountCode/text()}</td></tr>

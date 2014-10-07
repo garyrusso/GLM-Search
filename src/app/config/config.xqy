@@ -152,6 +152,7 @@ declare variable $c:REST-SEARCH-OPTIONS :=
     </constraint>
     <transform-results ns="http://marklogic.com/roxy/lib/origin-lib" apply="rest-origin-snippet" at="/app/lib/origin-lib.xqy">
       <preferred-elements>
+        <element ns="http://tax.thomsonreuters.com" name="type"/>
         <element ns="http://tax.thomsonreuters.com" name="id"/>
         <element ns="http://tax.thomsonreuters.com" name="importFileId"/>
         <element ns="http://tax.thomsonreuters.com" name="importedUnitCode"/>
@@ -248,6 +249,7 @@ declare variable $c:SEARCH-OPTIONS :=
     </constraint>
     <transform-results apply="metadata-snippet">
       <preferred-elements>
+        <element ns="http://tax.thomsonreuters.com" name="type"/>
         <element ns="http://tax.thomsonreuters.com" name="id"/>
         <element ns="http://tax.thomsonreuters.com" name="importFileId"/>
         <element ns="http://tax.thomsonreuters.com" name="importedUnitCode"/>
@@ -261,6 +263,7 @@ declare variable $c:SEARCH-OPTIONS :=
       <state name="compact">
         <transform-results apply="metadata-snippet">
           <preferred-elements>
+            <element ns="http://tax.thomsonreuters.com" name="type"/>
             <element ns="http://tax.thomsonreuters.com" name="id"/>
             <element ns="http://tax.thomsonreuters.com" name="importFileId"/>
             <element ns="http://tax.thomsonreuters.com" name="importedUnitCode"/>
@@ -277,6 +280,7 @@ declare variable $c:SEARCH-OPTIONS :=
       <state name="detailed">
         <transform-results apply="metadata-snippet">
           <preferred-elements>
+            <element ns="http://tax.thomsonreuters.com" name="type"/>
             <element ns="http://tax.thomsonreuters.com" name="id"/>
             <element ns="http://tax.thomsonreuters.com" name="importFileId"/>
             <element ns="http://tax.thomsonreuters.com" name="importedUnitCode"/>
