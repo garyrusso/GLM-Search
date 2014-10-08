@@ -8,6 +8,36 @@ declare namespace roxy = "http://marklogic.com/roxy";
 
 declare variable $NS := "http://tax.thomsonreuters.com";
 
+(:~
+ : Commit Transaction
+ :
+ : @param $txid as xs:string - upper string is the hostId lower string is the txId
+ :)
+declare function tr:commitTransaction($txid as xs:string)
+{
+  let $longHostId := xs:unsignedLong(fn:tokenize($txid,"_")[1])
+  let $longTxId := xs:unsignedLong(fn:tokenize($txid,"_")[2])
+  
+  let $__ := xdmp:transaction-commit($longHostId, $longTxId)
+
+  return "---> "||$txid
+};
+
+(:~
+ : Rollback Transaction
+ :
+ : @param $txid as xs:string - upper string is the hostId lower string is the txId
+ :)
+declare function tr:rollbackTransaction($txid as xs:string)
+{
+  let $longHostId := xs:unsignedLong(fn:tokenize($txid,"_")[1])
+  let $longTxId := xs:unsignedLong(fn:tokenize($txid,"_")[2])
+  
+  let $__ := xdmp:transaction-rollback($longHostId, $longTxId)
+
+  return "---> "||$txid
+};
+
 (: 
  : To add parameters to the functions, specify them in the params annotations. 
  : Example
@@ -33,11 +63,12 @@ function tr:get(
       element { fn:QName($NS, "txids") }
       {
         for $doc in $transList
-          return
-            element { fn:QName($NS, "txid") }
-            {
-              $doc/*:transaction-state/text()||": "||$doc/*:host-id/text()||"_"||$doc/*:transaction-id/text()
-            }
+          order by $doc/*:transaction-state/text(), $doc/*:transaction-id/text()
+            return
+              element { fn:QName($NS, "txid") }
+              {
+                $doc/*:transaction-state/text()||": "||$doc/*:host-id/text()||"_"||$doc/*:transaction-id/text()
+              }
       }
 
   return
@@ -75,12 +106,32 @@ function tr:post(
     $input   as document-node()*
 ) as document-node()*
 {
-  map:put($context, "output-types", "application/xml"),
-  xdmp:set-response-code(200, "OK"),
-  document
-  {
-    <status>POST called on the ext service extension</status>
-  }
+  let $output := map:put($context, "output-types", "application/xml")
+
+  let $result := map:get($params, "result")
+  let $txid   := map:get($params, "txid")
+
+  let $doc :=
+    if (fn:string-length($result) eq 0 and fn:string-length($txid) eq 0) then
+    (
+      <txid>{xdmp:transaction-create()}</txid>
+    )
+    else
+    if (fn:string-length($txid) gt 0 and fn:string-length($result) gt 0) then
+    (
+      if ($result eq "commit") then
+        <result>Transaction Committed: {tr:commitTransaction($txid)}</result>
+      else
+      if ($result eq "rollback") then
+        <result>Transaction Rolled Back: {tr:rollbackTransaction($txid)}</result>
+      else
+        <result>unknown operation</result>
+    )
+    else
+      <result>Missing transaction-id and/or result</result>
+
+  return
+    document { $doc }
 };
 
 (:

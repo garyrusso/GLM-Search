@@ -1,6 +1,6 @@
 # GLM Demo
 ## Purpose
-This app is to show how to do the following.
+This app is to show how to do the following:
 
 1. Extend the REST API
 1. Configure and test leading wildcard searches
@@ -16,9 +16,6 @@ This app is to show how to do the following.
 * $ ml local bootstrap
 * $ ml local modules
 * $ ml local deploy content
-
-* $ ml extend tr:transactions
-
 
 Content deploy copies zip file to database. Need to run the following snippet in qconsole to inflate data.
 

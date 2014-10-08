@@ -30,6 +30,35 @@ declare function tr:log($file as xs:string, $level as xs:string, $message as xs:
     xdmp:log(fn:concat("1..... LOGGING $file: ", $file, " | dateTime: ", $dateTime, " | level: ", $level, " | message: ", $message))
 };
 
+(:~
+ : Get Document Helper Function
+ :
+ : @param $uri
+ : @param $txid
+ :)
+declare function tr:getDocument($uri as xs:string, $txid  as xs:string) as document-node()*
+{
+  let $longHostId := xs:unsignedLong(fn:tokenize($txid,"_")[1])
+  let $longTxId := xs:unsignedLong(fn:tokenize($txid,"_")[2])
+
+  let $code := "fn:doc('"||$uri||"')"
+
+  let $doc :=
+    if (fn:string-length($txid) gt 0) then
+    (
+      xdmp:eval(
+        $code, (),
+  		  <options xmlns="xdmp:eval">
+  		    <transaction-id>{$longTxId}</transaction-id>
+  		  </options>
+		  )
+    )
+    else
+      fn:doc($uri)
+
+  return $doc
+};
+
 (: 
  : To add parameters to the functions, specify them in the params annotations. 
  : Example
@@ -40,7 +69,7 @@ declare function tr:log($file as xs:string, $level as xs:string, $message as xs:
 (:
  :)
 declare 
-%roxy:params("uri=xs:string")
+%roxy:params("uri=xs:string", "txid=xs:string")
 function tr:get(
   $context as map:map,
   $params  as map:map
@@ -48,8 +77,14 @@ function tr:get(
 {
   let $output-types := map:put($context,"output-types","application/xml")
 
-  let $uri := map:get($params, "uri")
-  let $doc := fn:doc($uri)
+  let $uri  := map:get($params, "uri")
+  let $txid :=
+    if (fn:empty(map:get($params, "txid"))) then
+      ""
+    else
+      map:get($params, "txid")
+
+  let $doc := tr:getDocument($uri, $txid)
 
   return
     if (fn:empty($doc)) then
@@ -75,7 +110,20 @@ function tr:put(
   let $newdoc :=  document { $input }
 
   let $uri := map:get($params, "uri")
-  let $doc := fn:doc($uri)
+  let $txid :=
+    if (fn:empty(map:get($params, "txid"))) then
+      ""
+    else
+      map:get($params, "txid")
+
+  let $doc := tr:getDocument($uri, $txid)
+
+  let $code1 := "xdmp:document-insert('"||$uri||","||$newdoc||",xdmp:default-permissions(), ('RESTful'))"
+  let $code := "fn:doc('"||$uri||"')"
+
+  let $longHostId := xs:unsignedLong(fn:tokenize($txid,"_")[1])
+  let $longTxId := xs:unsignedLong(fn:tokenize($txid,"_")[2])
+
   return
     if (fn:empty($doc)) then
       document {
@@ -86,7 +134,12 @@ function tr:put(
       if (fn:not(fn:empty($newdoc/node()))) then
         try
         {
-          xdmp:document-insert($uri, $newdoc, xdmp:default-permissions(), ("RESTful")),
+          xdmp:eval(
+            $code, (),
+      		  <options xmlns="xdmp:eval">
+      		    <transaction-id>{$longTxId}</transaction-id>
+      		  </options>
+    		  ),
           tr:log($uri, "INFO", fn:concat("INFO: Document was updated: ", $uri)),
           document {
             <status>{fn:concat("Update Success: ", $uri)}</status>
