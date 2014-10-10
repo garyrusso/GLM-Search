@@ -114,7 +114,15 @@ function tr:post(
   let $doc :=
     if (fn:string-length($result) eq 0 and fn:string-length($txid) eq 0) then
     (
-      <txid>{xdmp:transaction-create()}</txid>
+      <txid>
+      {
+        xdmp:transaction-create(
+          <options xmlns="xdmp:eval">
+            <transaction-mode>update</transaction-mode>
+          </options>
+        )
+      }
+      </txid>
     )
     else
     if (fn:string-length($txid) gt 0 and fn:string-length($result) gt 0) then

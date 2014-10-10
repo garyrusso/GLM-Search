@@ -41,13 +41,19 @@ declare function tr:getDocument($uri as xs:string, $txid  as xs:string) as docum
   let $longHostId := xs:unsignedLong(fn:tokenize($txid,"_")[1])
   let $longTxId := xs:unsignedLong(fn:tokenize($txid,"_")[2])
 
-  let $code := "fn:doc('"||$uri||"')"
+  let $evalCmd :=
+        fn:concat
+        (
+          'declare variable $uri external;
+           fn:doc($uri)'
+        )
 
   let $doc :=
     if (fn:string-length($txid) gt 0) then
     (
       xdmp:eval(
-        $code, (),
+        $evalCmd,
+        (xs:QName("uri"), $uri),
   		  <options xmlns="xdmp:eval">
   		    <transaction-id>{$longTxId}</transaction-id>
   		  </options>
@@ -107,7 +113,7 @@ function tr:put(
 {
   let $output-types := map:put($context,"output-types","application/xml")
 
-  let $newdoc :=  document { $input }
+  let $revisedDoc :=  document { $input }
 
   let $uri := map:get($params, "uri")
   let $txid :=
@@ -116,13 +122,18 @@ function tr:put(
     else
       map:get($params, "txid")
 
-  let $doc := tr:getDocument($uri, $txid)
-
-  let $code1 := "xdmp:document-insert('"||$uri||","||$newdoc||",xdmp:default-permissions(), ('RESTful'))"
-  let $code := "fn:doc('"||$uri||"')"
-
   let $longHostId := xs:unsignedLong(fn:tokenize($txid,"_")[1])
   let $longTxId := xs:unsignedLong(fn:tokenize($txid,"_")[2])
+
+  let $doc := tr:getDocument($uri, $txid)
+
+  let $evalCmd :=
+        fn:concat
+        (
+          'declare variable $uri external;
+           declare variable $revisedDoc external;
+           xdmp:document-insert($uri, $revisedDoc, xdmp:default-permissions(), ("RESTful"))'
+        )
 
   return
     if (fn:empty($doc)) then
@@ -131,15 +142,24 @@ function tr:put(
       }
     else
     (
-      if (fn:not(fn:empty($newdoc/node()))) then
+      if (fn:not(fn:empty($revisedDoc/node()))) then
         try
         {
-          xdmp:eval(
-            $code, (),
-      		  <options xmlns="xdmp:eval">
-      		    <transaction-id>{$longTxId}</transaction-id>
-      		  </options>
-    		  ),
+          if (fn:empty($longTxId)) then
+          (
+            xdmp:document-insert($uri, $revisedDoc, xdmp:default-permissions(), ("RESTful"))
+          )
+          else
+          (
+            xdmp:eval
+            (
+              $evalCmd,
+              (xs:QName("uri"), $uri, xs:QName("revisedDoc"), $revisedDoc),
+        		  <options xmlns="xdmp:eval">
+        		    <transaction-id>{$longTxId}</transaction-id>
+        		  </options>
+            )
+          ),
           tr:log($uri, "INFO", fn:concat("INFO: Document was updated: ", $uri)),
           document {
             <status>{fn:concat("Update Success: ", $uri)}</status>
@@ -166,11 +186,15 @@ function tr:post(
     $input   as document-node()*
 ) as document-node()*
 {
+  let $log := tr:log("111", "INFO", "--------------")
+  
   let $output-types := map:put($context,"output-types","application/xml")
 
   let $doc :=  document { $input } (: xdmp:tidy(document { $input }, $TIDY-OPTIONS) [2] :)
 
   let $uri := fn:concat($CONTENT-DIR, xdmp:hash64($doc), xdmp:random(), ".xml")
+
+  let $log := tr:log($uri, "INFO", "--------------"||$uri)
 
   return
     if (fn:not(fn:empty($doc/node()))) then
