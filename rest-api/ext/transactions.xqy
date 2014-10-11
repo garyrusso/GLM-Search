@@ -111,35 +111,37 @@ function tr:post(
   let $result := map:get($params, "result")
   let $txid   := map:get($params, "txid")
 
-  let $doc :=
+  let $config := admin:get-configuration()
+  let $hostid := admin:get-host-ids($config)
+
+  let $result := 
     if (fn:string-length($result) eq 0 and fn:string-length($txid) eq 0) then
     (
-      <txid>
-      {
-        xdmp:transaction-create(
-          <options xmlns="xdmp:eval">
-            <transaction-mode>update</transaction-mode>
-          </options>
-        )
-      }
-      </txid>
+      $hostid||"_"||
+      xdmp:transaction-create(
+        <options xmlns="xdmp:eval">
+          <transaction-mode>update</transaction-mode>
+        </options>
+      )
     )
     else
     if (fn:string-length($txid) gt 0 and fn:string-length($result) gt 0) then
     (
       if ($result eq "commit") then
-        <result>Transaction Committed: {tr:commitTransaction($txid)}</result>
+        "Transaction Committed: "||tr:commitTransaction($txid)
       else
       if ($result eq "rollback") then
-        <result>Transaction Rolled Back: {tr:rollbackTransaction($txid)}</result>
+        "Transaction Rolled Back: "||tr:rollbackTransaction($txid)
       else
-        <result>unknown operation</result>
+        "unknown operation"
     )
     else
-      <result>Missing transaction-id and/or result</result>
+      "Missing transaction-id and/or result"
+
+  let $resultDoc := <result>{$result}</result>
 
   return
-    document { $doc }
+    document { $resultDoc }
 };
 
 (:
