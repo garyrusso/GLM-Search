@@ -186,34 +186,73 @@ function tr:post(
     $input   as document-node()*
 ) as document-node()*
 {
-  let $log := tr:log("111", "INFO", "--------------")
-  
   let $output-types := map:put($context,"output-types","application/xml")
 
   let $doc :=  document { $input } (: xdmp:tidy(document { $input }, $TIDY-OPTIONS) [2] :)
 
-  let $uri := fn:concat($CONTENT-DIR, xdmp:hash64($doc), xdmp:random(), ".xml")
+  let $txid :=
+    if (fn:empty(map:get($params, "txid"))) then
+      ""
+    else
+      map:get($params, "txid")
+
+  let $longHostId := xs:unsignedLong(fn:tokenize($txid,"_")[1])
+  let $longTxId := xs:unsignedLong(fn:tokenize($txid,"_")[2])
+
+  let $rootName := fn:local-name-from-QName(fn:node-name($doc/child::element()))
+  
+  let $dir := if (fn:string-length($rootName) eq 0) then $CONTENT-DIR else "/"||$rootName||"/"
+  
+  let $uri := fn:concat($dir, xdmp:hash64($doc), xdmp:random(), ".xml")
 
   let $log := tr:log($uri, "INFO", "--------------"||$uri)
+  
+  (: Add createdAt and updatedAt code :)
+  let $log := tr:log($uri, "INFO createdAt", "--------------"||$doc//*:createdAt/text())
+  let $log := tr:log($uri, "INFO updatedAt", "--------------"||$doc//*:updatedAt/text())
+  let $log := tr:log($longTxId, "INFO $txId", "--------------"||$longTxId)
+  
+  (: let $__ := xdmp:node-replace($doc//*:updatedAt, ) :)
+
+  let $evalCmd :=
+        fn:concat
+        (
+          'declare variable $doc external;
+           xdmp:document-insert($doc, xdmp:default-permissions(), ("RESTful"))'
+        )
 
   return
     if (fn:not(fn:empty($doc/node()))) then
-      try
-      {
-        xdmp:document-insert($uri, $doc, xdmp:default-permissions(), ("RESTful")),
-        tr:log($uri, "INFO", fn:concat("INFO: New document added: ", $uri)),
-        document {
-          <status>{fn:concat("Create New Success: ", $uri)}</status>
+        try
+        {
+          if (fn:empty($longTxId)) then
+          (
+            xdmp:document-insert($uri, $doc, xdmp:default-permissions(), ("RESTful"))
+          )
+          else
+          (
+            xdmp:eval
+            (
+              $evalCmd,
+              (xs:QName("uri"), $uri, xs:QName("doc"), $doc),
+        		  <options xmlns="xdmp:eval">
+        		    <transaction-id>{$longTxId}</transaction-id>
+        		  </options>
+            )
+          ),
+          tr:log($uri, "INFO", fn:concat("INFO: Document was updated: ", $uri)),
+          document {
+            <status>{fn:concat("Update Success: ", $uri)}</status>
+          }
         }
-      }
-      catch ($e)
-      {
-        tr:log($uri, "ERROR", $e/error:message/text())
-      }
-      else
-        document {
-          <status>Input Error</status>
+        catch ($e)
+        {
+          tr:log($uri, "ERROR", $e/error:message/text())
         }
+        else
+          document {
+            <status>Input Error</status>
+          }
 };
 
 (:
