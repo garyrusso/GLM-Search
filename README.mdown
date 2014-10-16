@@ -47,13 +47,13 @@ return "done"
 
 <table>
     <tr>
-        <td colspan="4" style="font-size:x-large;color:green">Request Mappings</td>
+        <td colspan="4" style="font-size:x-large;color:green"><b>Request Mappings</b></td>
     </tr>
     <tr>
-        <td width="120" style="background-color:green;color:white">Method</td>
-        <td width="200" style="background-color:green;color:white">URL Template</td>
-        <td width="380" style="background-color:green;color:white">Parameters</td>
-        <td width="700" style="background-color:green;color:white">Description</td>
+        <td width="120" style="background-color:green;color:white"><b>Method</b></td>
+        <td width="200" style="background-color:green;color:white"><b>URL Template</b></td>
+        <td width="380" style="background-color:green;color:white"><b>Parameters</b></td>
+        <td width="700" style="background-color:green;color:white"><b>Description</b></td>
     </tr>
     <tr>
         <td valign="top" colspan="4"><b>Spreadsheet APIs</b></td>
@@ -134,7 +134,7 @@ return "done"
         <td valign="top" style ="font-family:'Courier New'">Deletes spreadsheet data.</td>
     </tr>
     <tr>
-        <td valign="top" colspan="4"><b>General Search APIs</b></td>
+        <td valign="top" colspan="4"><b>Search APIs</b></td>
     </tr>
     <tr>
         <td valign="top">GET</td>
@@ -158,7 +158,7 @@ return "done"
 			<tr><td valign="top">rs:pageLength</td><td>number of records to return</td></tr>
 		</table>
 		</td>
-        <td valign="top" style ="font-family:'Courier New'">Search across spreadsheets data only.<hr/>Returns search results using custom snippets with highlighting.<hr/></td>
+        <td valign="top" style ="font-family:'Courier New'">Search across spreadsheet data only.<hr/>Returns search results using custom snippets with highlighting.<hr/></td>
     </tr>
     <tr>
         <td valign="top">GET</td>
