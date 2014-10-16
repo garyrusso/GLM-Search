@@ -202,12 +202,12 @@ return "done"
         <td valign="top">GET</td>
         <td valign="top">/spreadsheet/{uri}/search</td>
         <td valign="top">
-		<table>
-			<tr><td valign="top" colspan="2"><b>uri</b> parameter is embedded in request URL</td></tr>
-			<tr><td valign="top">rs:q</td><td>query string</td></tr>
-			<tr><td valign="top">rs:start</td><td>starting record</td></tr>
-			<tr><td valign="top">rs:pageLength</td><td>number of records to return</td></tr>
-		</table>
+			<table>
+				<tr><td valign="top" colspan="2"><b>uri</b> parameter is embedded in request URL</td></tr>
+				<tr><td valign="top">rs:q</td><td>query string</td></tr>
+				<tr><td valign="top">rs:start</td><td>starting record</td></tr>
+				<tr><td valign="top">rs:pageLength</td><td>number of records to return</td></tr>
+			</table>
 		</td>
         <td valign="top" style ="font-family:'Courier New'">Search within specific spreadsheet data.</td>
     </tr>
@@ -217,25 +217,47 @@ return "done"
     <tr>
         <td valign="top">GET</td>
         <td valign="top">/document</td>
-        <td valign="top">rs:uri</td>
+        <td valign="top">
+			<table>
+				<tr><td valign="top">rs:uri</td><td>Is needed to retrieve specific document.</td></tr>
+				<tr><td valign="top">rs:txid</td><td>transaction-id is optional</td></tr>
+			</table>
+		</td>
         <td valign="top" style ="font-family:'Courier New'">Returns document</td>
     </tr>
     <tr>
         <td valign="top">PUT</td>
         <td valign="top">/document</td>
-        <td valign="top">rs:uri and XML payload</td>
+        <td valign="top">
+			<table>
+				<tr><td valign="top">rs:uri</td><td>Is needed to target specific document.</td></tr>
+				<tr><td valign="top">payload</td><td>Requires XML payload.<hr/>JSON payload to be added later.</td></tr>
+				<tr><td valign="top">rs:txid</td><td>transaction-id is optional</td></tr>
+			</table>
+		</td>
         <td valign="top" style ="font-family:'Courier New'">Updates document using payload</td>
     </tr>
     <tr>
         <td valign="top">POST</td>
         <td valign="top">/document</td>
+        <td valign="top">
+			<table>
+				<tr><td valign="top">rs:txid</td><td>transaction-id is optional</td></tr>
+				<tr><td valign="top">payload</td><td>Requires XML payload.<hr/>JSON payload to be added later.</td></tr>
+			</table>
+		</td>
         <td valign="top">No uri parameter. Requires an XML payload.</td>
         <td valign="top" style ="font-family:'Courier New'">Creates new document using XML payload and returns success or fail status.</td>
     </tr>
     <tr>
         <td valign="top">DELETE</td>
         <td valign="top">/document</td>
-        <td valign="top">rs:uri</td>
+        <td valign="top">
+			<table>
+				<tr><td valign="top">rs:uri</td><td>Is needed to target specific document.</td></tr>
+				<tr><td valign="top">rs:txid</td><td>transaction-id is optional</td></tr>
+			</table>
+		</td>
         <td valign="top" style ="font-family:'Courier New'">Deletes document</td>
     </tr>
     <tr>
