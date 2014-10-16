@@ -61,29 +61,45 @@ return "done"
     <tr>
         <td valign="top">GET</td>
         <td valign="top">/spreadsheet/{uri}</td>
-        <td valign="top"><b>uri</b> parameter is tail of the request URL</td>
+        <td valign="top">
+			<table>
+				<tr><td valign="top"><b>uri</b></td><td>Is tail of the request URL.</td></tr>
+				<tr><td valign="top">rs:txid</td><td>transaction-id is optional.</td></tr>
+			</table>
+		</td>
         <td valign="top" style ="font-family:'Courier New'">Get the Excel data and file associated with the specific URI.</td>
     </tr>
     <tr>
         <td valign="top">GET</td>
         <td valign="top">/spreadsheet/{uri}/file</td>
-        <td valign="top"><b>uri</b> parameter is embedded in request URL</td>
+        <td valign="top">
+			<table>
+				<tr><td valign="top"><b>uri</b></td><td>uri is embedded in request URL</td></tr>
+				<tr><td valign="top">rs:txid</td><td>transaction-id is optional.</td></tr>
+			</table>
+		</td>
         <td valign="top" style ="font-family:'Courier New'">Get the Excel file associatated with the specific URI.</td>
     </tr>
     <tr>
         <td valign="top">GET</td>
         <td valign="top">/spreadsheet/{uri}/data</td>
-        <td valign="top"><b>uri</b> parameter is embedded in request URL</td>
+        <td valign="top">
+			<table>
+				<tr><td valign="top"><b>uri</b></td><td>uri is embedded in request URL</td></tr>
+				<tr><td valign="top">rs:txid</td><td>transaction-id is optional.</td></tr>
+			</table>
+		</td>
         <td valign="top" style ="font-family:'Courier New'">Get the Excel data associatated with the specific URI.</td>
     </tr>
     <tr>
         <td valign="top">PUT</td>
         <td valign="top">/spreadsheet/{uri}</td>
         <td valign="top">
-		<table>
-			<tr><td valign="top"><b>uri</b></td><td>Is tail of request URL</td></tr>
-			<tr><td valign="top">payload</td><td>format is tbd</td></tr>
-		</table>
+			<table>
+				<tr><td valign="top"><b>uri</b></td><td>Is tail of request URL</td></tr>
+				<tr><td valign="top">rs:txid</td><td>transaction-id is optional.</td></tr>
+				<tr><td valign="top">payload</td><td>format is tbd</td></tr>
+			</table>
 		</td>
         <td valign="top" style ="font-family:'Courier New'">Updates data and file of a specfic spreadsheet.</td>
     </tr>
@@ -91,10 +107,11 @@ return "done"
         <td valign="top">PUT</td>
         <td valign="top">/spreadsheet/{uri}/file</td>
         <td valign="top">
-		<table>
-			<tr><td valign="top"><b>uri</b></td><td>Is tail of request URL</td></tr>
-			<tr><td valign="top">payload</td><td>format is tbd</td></tr>
-		</table>
+			<table>
+				<tr><td valign="top"><b>uri</b></td><td>Is tail of request URL</td></tr>
+				<tr><td valign="top">rs:txid</td><td>transaction-id is optional.</td></tr>
+				<tr><td valign="top">payload</td><td>format is tbd</td></tr>
+			</table>
 		</td>
         <td valign="top" style ="font-family:'Courier New'">Updates file of a specfic spreadsheet.</td>
     </tr>
@@ -102,35 +119,56 @@ return "done"
         <td valign="top">PUT</td>
         <td valign="top">/spreadsheet/{uri}/data</td>
         <td valign="top">
-		<table>
-			<tr><td valign="top"><b>uri</b></td><td>Is tail of request URL</td></tr>
-			<tr><td valign="top">payload</td><td>format is tbd</td></tr>
-		</table>
+			<table>
+				<tr><td valign="top"><b>uri</b></td><td>Is tail of request URL</td></tr>
+				<tr><td valign="top">rs:txid</td><td>transaction-id is optional.</td></tr>
+				<tr><td valign="top">payload</td><td>format is tbd</td></tr>
+			</table>
 		</td>
         <td valign="top" style ="font-family:'Courier New'">Updates data of a specfic spreadsheet.</td>
     </tr>
     <tr>
         <td valign="top">POST</td>
         <td valign="top">/spreadsheet</td>
-        <td valign="top">payload - format is tbd</td>
+        <td valign="top">
+			<table>
+				<tr><td valign="top">rs:txid</td><td>transaction-id is optional.</td></tr>
+				<tr><td valign="top">payload</td><td>format is tbd</td></tr>
+			</table>
+		</td>
         <td valign="top" style ="font-family:'Courier New'">Creates new spreadsheet set (file with data).<hr/>Data is stored separately for richer search capability.<hr/>The xlsx or xls file is also stored for version history/audit purposes.<hr/></td>
     </tr>
     <tr>
         <td valign="top">DELETE</td>
         <td valign="top">/spreadsheet/{uri}</td>
-        <td valign="top"><b>uri</b> is tail of request URL</td>
+        <td valign="top">
+			<table>
+				<tr><td valign="top"><b>uri</b></td><td>Is tail of request URL.</td></tr>
+				<tr><td valign="top">rs:txid</td><td>transaction-id is optional.</td></tr>
+			</table>
+		</td>
         <td valign="top" style ="font-family:'Courier New'">Deletes spreadsheet file and data.</td>
     </tr>
     <tr>
         <td valign="top">DELETE</td>
         <td valign="top">/spreadsheet/{uri}/file</td>
-        <td valign="top"><b>uri</b> is tail of request URL</td>
+        <td valign="top">
+			<table>
+				<tr><td valign="top"><b>uri</b></td><td>Is tail of request URL.</td></tr>
+				<tr><td valign="top">rs:txid</td><td>transaction-id is optional.</td></tr>
+			</table>
+		</td>
         <td valign="top" style ="font-family:'Courier New'">Deletes spreadsheet file.</td>
     </tr>
     <tr>
         <td valign="top">DELETE</td>
         <td valign="top">/spreadsheet/{uri}/data</td>
-        <td valign="top"><b>uri</b> is tail of request URL</td>
+        <td valign="top">
+			<table>
+				<tr><td valign="top"><b>uri</b></td><td>Is tail of request URL.</td></tr>
+				<tr><td valign="top">rs:txid</td><td>transaction-id is optional.</td></tr>
+			</table>
+		</td>
         <td valign="top" style ="font-family:'Courier New'">Deletes spreadsheet data.</td>
     </tr>
     <tr>
