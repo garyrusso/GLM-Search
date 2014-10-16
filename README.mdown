@@ -246,7 +246,6 @@ return "done"
 				<tr><td valign="top">payload</td><td>Requires XML payload.<hr/>JSON payload to be added later.</td></tr>
 			</table>
 		</td>
-        <td valign="top">No uri parameter. Requires an XML payload.</td>
         <td valign="top" style ="font-family:'Courier New'">Creates new document using XML payload and returns success or fail status.</td>
     </tr>
     <tr>
