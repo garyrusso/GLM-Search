@@ -218,7 +218,7 @@ function tr:post(
         fn:concat
         (
           'declare variable $doc external;
-           xdmp:document-insert($doc, xdmp:default-permissions(), ("RESTful"))'
+           xdmp:document-insert($uri, $doc, xdmp:default-permissions(), ("RESTful"))'
         )
 
   return

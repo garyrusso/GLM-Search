@@ -43,6 +43,65 @@ return "done"
 </pre>
 
 
+# RESTful APIs
+
+<table>
+    <tr>
+        <td colspan="4" style="font-size:x-large;color:green">Request Mappings</td>
+    </tr>
+    <tr>
+        <td width="120" style="background-color:green;color:white">Method</td>
+        <td width="200" style="background-color:green;color:white">URL Template</td>
+        <td width="300" style="background-color:green;color:white">Parameters</td>
+        <td width="700" style="background-color:green;color:white">Description</td>
+    </tr>
+    <tr>
+        <td valign="top">GET</td>
+        <td valign="top">/search</td>
+        <td valign="top">rs:q, rs:start, rs:pageLength</td>
+        <td valign="top" style ="font-family:'Courier New'">Returns search results</td>
+    </tr>
+    <tr>
+        <td valign="top">GET</td>
+        <td valign="top">/document</td>
+        <td valign="top">rs:uri</td>
+        <td valign="top" style ="font-family:'Courier New'">Returns document</td>
+    </tr>
+    <tr>
+        <td valign="top">PUT</td>
+        <td valign="top">/document</td>
+        <td valign="top">rs:uri and XML payload</td>
+        <td valign="top" style ="font-family:'Courier New'">Updates document using payload</td>
+    </tr>
+    <tr>
+        <td valign="top">POST</td>
+        <td valign="top">/document</td>
+        <td valign="top">No url parameter. Requires an XML payload.</td>
+        <td valign="top" style ="font-family:'Courier New'">Creates new document using XML payload and returns success or fail status.</td>
+    </tr>
+    <tr>
+        <td valign="top">DELETE</td>
+        <td valign="top">/document</td>
+        <td valign="top">rs:uri</td>
+        <td valign="top" style ="font-family:'Courier New'">Deletes document</td>
+    </tr>
+    <tr>
+        <td valign="top">GET</td>
+        <td valign="top">/transactions</td>
+        <td valign="top">No url paramters or payload.</td>
+        <td valign="top" style ="font-family:'Courier New'">Returns transaction status of all transaction in the system.</td>
+    </tr>
+    <tr>
+        <td valign="top">POST</td>
+        <td valign="top">/transactions</td>
+        <td valign="top">rs:txid (optional), rs:result=(commit|rollback) (optional)</td>
+        <td style ="font-family:'Courier New'">If no rs:txid is given then a new transactional context is created and a transactionid is returned. If an rs:txid and rs:result is provided then transaction is either committed or rolled back. It will also discard the transactional context so that the transaction-id is not longer valid.</td>
+    </tr>
+</table>
+
+
+
+
 # Roxy
 Roxy (RObust XQuerY Framework) is a lightweight framework for quickly developing well-structured, easily maintained XQuery applications. Roxy was heavily inspired by Ruby On Rails and CakePHP.
 
