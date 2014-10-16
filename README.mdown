@@ -52,14 +52,104 @@ return "done"
     <tr>
         <td width="120" style="background-color:green;color:white">Method</td>
         <td width="200" style="background-color:green;color:white">URL Template</td>
-        <td width="300" style="background-color:green;color:white">Parameters</td>
+        <td width="380" style="background-color:green;color:white">Parameters</td>
         <td width="700" style="background-color:green;color:white">Description</td>
+    </tr>
+    <tr>
+        <td valign="top" colspan="4"><b>Spreadsheet APIs</b></td>
+    </tr>
+    <tr>
+        <td valign="top">GET</td>
+        <td valign="top">/spreadsheet/{uri}</td>
+        <td valign="top"><b>uri</b> parameter is tail of the request URL</td>
+        <td valign="top" style ="font-family:'Courier New'">Get the Excel data and file associated with the specific URI.</td>
+    </tr>
+    <tr>
+        <td valign="top">GET</td>
+        <td valign="top">/spreadsheet/{uri}/file</td>
+        <td valign="top"><b>uri</b> parameter is embedded in request URL</td>
+        <td valign="top" style ="font-family:'Courier New'">Get the Excel file associatated with the specific URI.</td>
+    </tr>
+    <tr>
+        <td valign="top">GET</td>
+        <td valign="top">/spreadsheet/{uri}/data</td>
+        <td valign="top"><b>uri</b> parameter is embedded in request URL</td>
+        <td valign="top" style ="font-family:'Courier New'">Get the Excel data associatated with the specific URI.</td>
+    </tr>
+    <tr>
+        <td valign="top">GET - Search</td>
+        <td valign="top">/spreadsheet/{uri}/search</td>
+        <td valign="top"><b>uri</b> parameter is embedded in request URL</td>
+        <td valign="top" style ="font-family:'Courier New'">Search within specific spreadsheet data.</td>
+    </tr>
+    <tr>
+        <td valign="top">PUT</td>
+        <td valign="top">/spreadsheet/{uri}</td>
+        <td valign="top">
+		<table>
+			<tr><td valign="top"><b>uri</b></td><td>Is tail of request URL</td></tr>
+			<tr><td valign="top">payload</td><td>format is tbd</td></tr>
+		</table>
+		</td>
+        <td valign="top" style ="font-family:'Courier New'">Updates data and file of a specfic spreadsheet.</td>
+    </tr>
+    <tr>
+        <td valign="top">PUT</td>
+        <td valign="top">/spreadsheet/{uri}/file</td>
+        <td valign="top">
+		<table>
+			<tr><td valign="top"><b>uri</b></td><td>Is tail of request URL</td></tr>
+			<tr><td valign="top">payload</td><td>format is tbd</td></tr>
+		</table>
+		</td>
+        <td valign="top" style ="font-family:'Courier New'">Updates file of a specfic spreadsheet.</td>
+    </tr>
+    <tr>
+        <td valign="top">PUT</td>
+        <td valign="top">/spreadsheet/{uri}/data</td>
+        <td valign="top">
+		<table>
+			<tr><td valign="top"><b>uri</b></td><td>Is tail of request URL</td></tr>
+			<tr><td valign="top">payload</td><td>format is tbd</td></tr>
+		</table>
+		</td>
+        <td valign="top" style ="font-family:'Courier New'">Updates data of a specfic spreadsheet.</td>
+    </tr>
+    <tr>
+        <td valign="top">POST</td>
+        <td valign="top">/spreadsheet</td>
+        <td valign="top">payload - format is tbd</td>
+        <td valign="top" style ="font-family:'Courier New'">Creates new spreadsheet set (file with data).<hr/>Data is stored separately for richer search capability.<hr/>The xlsx or xls file is also stored for version history/audit purposes.<hr/></td>
+    </tr>
+    <tr>
+        <td valign="top" colspan="4"><b>General Search APIs</b></td>
     </tr>
     <tr>
         <td valign="top">GET</td>
         <td valign="top">/search</td>
-        <td valign="top">rs:q, rs:start, rs:pageLength</td>
+        <td valign="top">
+		<table>
+			<tr><td valign="top">rs:q</td><td>query string</td></tr>
+			<tr><td valign="top">rs:start</td><td>starting record</td></tr>
+			<tr><td valign="top">rs:pageLength</td><td>number of records to return</td></tr>
+		</table>
+		</td>
+        <td valign="top" style ="font-family:'Courier New'">Searches entire Origin data hub.<hr/>Returns search results using custom snippets with highlighting.<hr/></td>
+    </tr>
+    <tr>
+        <td valign="top">GET</td>
+        <td valign="top">/spreadsheet/search</td>
+        <td valign="top">
+		<table>
+			<tr><td valign="top">rs:q</td><td>query string</td></tr>
+			<tr><td valign="top">rs:start</td><td>starting record</td></tr>
+			<tr><td valign="top">rs:pageLength</td><td>number of records to return</td></tr>
+		</table>
+		</td>
         <td valign="top" style ="font-family:'Courier New'">Returns search results</td>
+    </tr>
+    <tr>
+        <td valign="top" colspan="4"><b>Document APIs</b></td>
     </tr>
     <tr>
         <td valign="top">GET</td>
@@ -76,7 +166,7 @@ return "done"
     <tr>
         <td valign="top">POST</td>
         <td valign="top">/document</td>
-        <td valign="top">No url parameter. Requires an XML payload.</td>
+        <td valign="top">No uri parameter. Requires an XML payload.</td>
         <td valign="top" style ="font-family:'Courier New'">Creates new document using XML payload and returns success or fail status.</td>
     </tr>
     <tr>
@@ -86,16 +176,19 @@ return "done"
         <td valign="top" style ="font-family:'Courier New'">Deletes document</td>
     </tr>
     <tr>
+        <td valign="top" colspan="4"><b>Transaction APIs</b></td>
+    </tr>
+    <tr>
         <td valign="top">GET</td>
         <td valign="top">/transactions</td>
-        <td valign="top">No url paramters or payload.</td>
-        <td valign="top" style ="font-family:'Courier New'">Returns transaction status of all transaction in the system.</td>
+        <td valign="top">No uri parameter or payload.</td>
+        <td valign="top" style ="font-family:'Courier New'">Returns transaction status for all transactions in the system.</td>
     </tr>
     <tr>
         <td valign="top">POST</td>
         <td valign="top">/transactions</td>
-        <td valign="top">rs:txid (optional), rs:result=(commit|rollback) (optional)</td>
-        <td style ="font-family:'Courier New'">If no rs:txid is given then a new transactional context is created and a transactionid is returned. If an rs:txid and rs:result is provided then transaction is either committed or rolled back. It will also discard the transactional context so that the transaction-id is not longer valid.</td>
+        <td valign="top">rs:txid (optional)<hr/>rs:result=(commit|rollback) (optional)</td>
+        <td style ="font-family:'Courier New'">If no rs:txid is given then a new transactional context is created with new txid.<hr/>If an rs:txid and rs:result is provided then transaction is either committed or rolled back.<hr/>It will also discard the transactional context so that the txid is not longer valid.<hr/></td>
     </tr>
 </table>
 
