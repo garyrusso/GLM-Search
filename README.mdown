@@ -116,6 +116,24 @@ return "done"
         <td valign="top" style ="font-family:'Courier New'">Creates new spreadsheet set (file with data).<hr/>Data is stored separately for richer search capability.<hr/>The xlsx or xls file is also stored for version history/audit purposes.<hr/></td>
     </tr>
     <tr>
+        <td valign="top">DELETE</td>
+        <td valign="top">/spreadsheet/{uri}</td>
+        <td valign="top"><b>uri</b> is tail of request URL</td>
+        <td valign="top" style ="font-family:'Courier New'">Deletes spreadsheet file and data.</td>
+    </tr>
+    <tr>
+        <td valign="top">DELETE</td>
+        <td valign="top">/spreadsheet/{uri}/file</td>
+        <td valign="top"><b>uri</b> is tail of request URL</td>
+        <td valign="top" style ="font-family:'Courier New'">Deletes spreadsheet file.</td>
+    </tr>
+    <tr>
+        <td valign="top">DELETE</td>
+        <td valign="top">/spreadsheet/{uri}/data</td>
+        <td valign="top"><b>uri</b> is tail of request URL</td>
+        <td valign="top" style ="font-family:'Courier New'">Deletes spreadsheet data.</td>
+    </tr>
+    <tr>
         <td valign="top" colspan="4"><b>General Search APIs</b></td>
     </tr>
     <tr>
@@ -196,6 +214,33 @@ return "done"
         <td valign="top">/transactions</td>
         <td valign="top">rs:txid (optional)<hr/>rs:result=(commit|rollback) (optional)</td>
         <td style ="font-family:'Courier New'">If no rs:txid is given then a new transactional context is created with new txid.<hr/>If an rs:txid and rs:result is provided then transaction is either committed or rolled back.<hr/>It will also discard the transactional context so that the txid is not longer valid.<hr/></td>
+    </tr>
+    <tr>
+        <td valign="top" colspan="4"><b>Audit APIs</b></td>
+    </tr>
+    <tr>
+        <td valign="top">GET</td>
+        <td valign="top">/audit</td>
+        <td valign="top">tbd</td>
+        <td valign="top" style ="font-family:'Courier New'">tbd</td>
+    </tr>
+    <tr>
+        <td valign="top">PUT</td>
+        <td valign="top">/audit</td>
+        <td valign="top">tbd</td>
+        <td valign="top" style ="font-family:'Courier New'">tbd</td>
+    </tr>
+    <tr>
+        <td valign="top">POST</td>
+        <td valign="top">/audit</td>
+        <td valign="top">tbd</td>
+        <td valign="top" style ="font-family:'Courier New'">tbd</td>
+    </tr>
+    <tr>
+        <td valign="top">DELETE</td>
+        <td valign="top">/audit</td>
+        <td valign="top">tbd</td>
+        <td valign="top" style ="font-family:'Courier New'">tbd</td>
     </tr>
 </table>
 
