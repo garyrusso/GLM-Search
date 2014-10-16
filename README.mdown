@@ -77,12 +77,6 @@ return "done"
         <td valign="top" style ="font-family:'Courier New'">Get the Excel data associatated with the specific URI.</td>
     </tr>
     <tr>
-        <td valign="top">GET - Search</td>
-        <td valign="top">/spreadsheet/{uri}/search</td>
-        <td valign="top"><b>uri</b> parameter is embedded in request URL</td>
-        <td valign="top" style ="font-family:'Courier New'">Search within specific spreadsheet data.</td>
-    </tr>
-    <tr>
         <td valign="top">PUT</td>
         <td valign="top">/spreadsheet/{uri}</td>
         <td valign="top">
@@ -146,7 +140,20 @@ return "done"
 			<tr><td valign="top">rs:pageLength</td><td>number of records to return</td></tr>
 		</table>
 		</td>
-        <td valign="top" style ="font-family:'Courier New'">Returns search results</td>
+        <td valign="top" style ="font-family:'Courier New'">Search across spreadsheets data only.<hr/>Returns search results using custom snippets with highlighting.<hr/></td>
+    </tr>
+    <tr>
+        <td valign="top">GET</td>
+        <td valign="top">/spreadsheet/{uri}/search</td>
+        <td valign="top">
+		<table>
+			<tr><td valign="top" colspan="2"><b>uri</b> parameter is embedded in request URL</td></tr>
+			<tr><td valign="top">rs:q</td><td>query string</td></tr>
+			<tr><td valign="top">rs:start</td><td>starting record</td></tr>
+			<tr><td valign="top">rs:pageLength</td><td>number of records to return</td></tr>
+		</table>
+		</td>
+        <td valign="top" style ="font-family:'Courier New'">Search within specific spreadsheet data.</td>
     </tr>
     <tr>
         <td valign="top" colspan="4"><b>Document APIs</b></td>
