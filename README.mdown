@@ -50,10 +50,10 @@ return "done"
         <td colspan="4" style="font-size:x-large;color:green"><b>Request Mappings</b></td>
     </tr>
     <tr>
-        <td width="120" style="background-color:green;color:white"><b>Method</b></td>
-        <td width="200" style="background-color:green;color:white"><b>URL Template</b></td>
-        <td width="380" style="background-color:green;color:white"><b>Parameters</b></td>
-        <td width="700" style="background-color:green;color:white"><b>Description</b></td>
+        <td width="100" style="background-color:green;color:white"><b>Method</b></td>
+        <td width="180" style="background-color:green;color:white"><b>URL Template</b></td>
+        <td width="420" style="background-color:green;color:white"><b>Parameters</b></td>
+        <td width="720" style="background-color:green;color:white"><b>Description</b></td>
     </tr>
     <tr>
         <td valign="top" colspan="4"><b>Search APIs</b></td>
