@@ -7,6 +7,22 @@ declare variable $OPTIONS as element () :=
                    <format>xml</format>
                  </options>;
 
+(:~
+ : Get Value from Defined Name
+ :
+ : @param $cell
+ : @param $doc
+ :)
+declare function local:getValue($cell as xs:string, $sheetName as xs:string, $table, $rels, $wkBook)
+{
+  let $wkSheetKey := "xl/"||xs:string($rels/*:Relationship[@Id=$wkBook[@name=$sheetName]/@*:id]/@Target)
+
+  let $relWkSheet := map:get($table, $wkSheetKey)
+  let $value      := $relWkSheet/*:worksheet/*:sheetData/*:row/*:c[@r=$cell]/*:v/text()
+
+  return $value
+};
+
 let $zipfile  := "/tmp/Book1.xlsx"
 let $zipfile2 := "/tmp/AMC_TB_Upload_Batch_Processing.xlsm"
 let $doc      := xdmp:document-get($zipfile)
@@ -105,6 +121,7 @@ let $doc1 :=
           let $pos   := fn:replace($cell, "\$", "")
           let $col   := fn:tokenize($pos, "[0-9]") [1]
           let $row   := fn:tokenize($pos, "[A-Za-z]+") [2]
+          let $val   := local:getValue($pos, $sheet, $table, $rels, $wkBook)
           return
           element { fn:QName($NS, "definedName") }
           {
@@ -112,7 +129,8 @@ let $doc1 :=
             element { fn:QName($NS, "sheet") } { $sheet },
             element { fn:QName($NS, "col") }   { $col },
             element { fn:QName($NS, "row") }   { $row },
-            element { fn:QName($NS, "pos") }   { $pos }
+            element { fn:QName($NS, "pos") }   { $pos },
+            element { fn:QName($NS, "value") } { $val }
           }
       },
       $workSheets
@@ -120,13 +138,18 @@ let $doc1 :=
   }
 
 let $uri := $dir||xdmp:hash64($doc1)||".xml"
+let $cell  := "C4"
 
 return
 (
 (:
-  $fileUri,
-  $uri,
-  $doc1/*:feed/*:definedNames/*:definedName/*:name/text(),
+  for $dn1 in $doc1/*:feed/*:definedNames/*:definedName return $dn1/*:dname/text()||" | "||$dn1/*:sheet/text(),
+  for $dn2 in $doc1/*:feed/*:definedNames/*:definedName
+    return
+      local:getValue($cell, $dn2/*:sheet/text(), $table, $rels, $wkBook),
+  $wkBook[1],
+  $wkBook[1]/@name,
+  $rels,
   $doc1
 :)
   xdmp:document-insert($uri, $doc1, xdmp:default-permissions(), ("spreadsheet")),
