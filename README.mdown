@@ -63,31 +63,31 @@ return "done"
         <td valign="top">/search</td>
         <td valign="top">
 		<table>
-			<tr><td valign="top">rs:q</td><td>query string<hr/>leading and trailing wildcards<hr/>constraints:<ul><li>dname</li><li>row</li><li>col</li><li>cell</li></ul><hr/>Structured query used to aggregate values (SUM, AVG, etc.)</td></tr>
+			<tr><td valign="top">rs:q</td><td>query string<hr/>leading and trailing wildcards<hr/>constraints:<ul><li>dname</li><li>row</li><li>col</li><li>cell</li></ul></td></tr>
 			<tr><td valign="top">rs:start</td><td>starting record</td></tr>
 			<tr><td valign="top">rs:pageLength</td><td>number of records to return</td></tr>
 		</table>
 		</td>
-        <td valign="top" style ="font-family:'Courier New'">Searches entire Origin data hub.<hr/>Returns search results using custom snippets with highlighting.<hr/></td>
+        <td valign="top" style ="font-family:'Courier New'">Searches entire Origin data hub.<hr/>Returns search results using custom snippets with highlighting.<hr/>Structured query used to aggregate values (SUM, AVG, etc.)</td>
     </tr>
     <tr>
         <td valign="top">GET</td>
         <td valign="top">/spreadsheet/search</td>
         <td valign="top">
 		<table>
-			<tr><td valign="top">rs:q</td><td>query string<hr/>leading and trailing wildcards<hr/>constraints:<ul><li>dname</li><li>row</li><li>col</li><li>cell</li><li>user</li></ul><hr/>Structured query used to aggregate values (SUM, AVG, etc.)</td></tr>
+			<tr><td valign="top">rs:q</td><td>query string<hr/>leading and trailing wildcards<hr/>constraints:<ul><li>dname</li><li>row</li><li>col</li><li>cell</li><li>user</li></ul></td></tr>
 			<tr><td valign="top">rs:start</td><td>starting record</td></tr>
 			<tr><td valign="top">rs:pageLength</td><td>number of records to return</td></tr>
 		</table>
 		</td>
-        <td valign="top" style ="font-family:'Courier New'">Search across all spreadsheet data of all users.<hr/>Returns search results using custom snippets with highlighting.<hr/></td>
+        <td valign="top" style ="font-family:'Courier New'">Search across all spreadsheet data of all users.<hr/>Returns search results using custom snippets with highlighting.<hr/>Structured query used to aggregate values (SUM, AVG, etc.)</td>
     </tr>
     <tr>
         <td valign="top">GET</td>
         <td valign="top">/spreadsheet/{user}/search</td>
         <td valign="top">
 		<table>
-			<tr><td valign="top">rs:q</td><td>query string<hr/>leading and trailing wildcards<hr/>constraints:<ul><li>dname</li><li>row</li><li>col</li><li>cell</li></ul><hr/>Structured query used to aggregate values (SUM, AVG, etc.)</td></tr>
+			<tr><td valign="top">rs:q</td><td>query string<hr/>leading and trailing wildcards<hr/>constraints:<ul><li>dname</li><li>row</li><li>col</li><li>cell</li></ul></td></tr>
 			<tr><td valign="top">rs:start</td><td>starting record</td></tr>
 			<tr><td valign="top">rs:pageLength</td><td>number of records to return</td></tr>
 		</table>
@@ -99,12 +99,12 @@ return "done"
         <td valign="top">/spreadsheet/{user}/{docid}/search</td>
         <td valign="top">
 		<table>
-			<tr><td valign="top">rs:q</td><td>query string<hr/>leading and trailing wildcards<hr/>constraints:<ul><li>dname</li><li>row</li><li>col</li><li>cell</li></ul><hr/>Structured query used to aggregate values (SUM, AVG, etc.)</td></tr>
+			<tr><td valign="top">rs:q</td><td>query string<hr/>leading and trailing wildcards<hr/>constraints:<ul><li>dname</li><li>row</li><li>col</li><li>cell</li></ul></td></tr>
 			<tr><td valign="top">rs:start</td><td>starting record</td></tr>
 			<tr><td valign="top">rs:pageLength</td><td>number of records to return</td></tr>
 		</table>
 		</td>
-        <td valign="top" style ="font-family:'Courier New'">Search within specific spreadsheet data.<hr/>Returns search results using custom snippets with highlighting.<hr/></td>
+        <td valign="top" style ="font-family:'Courier New'">Search within specific spreadsheet data.<hr/>Returns search results using custom snippets with highlighting.<hr/>Structured query used to aggregate values (SUM, AVG, etc.)</td>
     </tr>
     <tr>
         <td valign="top" colspan="4"><b>Spreadsheet Management APIs</b></td>
