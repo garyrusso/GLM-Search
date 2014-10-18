@@ -56,7 +56,58 @@ return "done"
         <td width="700" style="background-color:green;color:white"><b>Description</b></td>
     </tr>
     <tr>
-        <td valign="top" colspan="4"><b>Spreadsheet APIs</b></td>
+        <td valign="top" colspan="4"><b>Search APIs</b></td>
+    </tr>
+    <tr>
+        <td valign="top">GET</td>
+        <td valign="top">/search</td>
+        <td valign="top">
+		<table>
+			<tr><td valign="top">rs:q</td><td>query string<hr/>leading and trailing wildcards<hr/>constraints:<ul><li>dname</li><li>row</li><li>col</li><li>cell</li></ul><hr/>Structured query used to aggregate values (SUM, AVG, etc.)</td></tr>
+			<tr><td valign="top">rs:start</td><td>starting record</td></tr>
+			<tr><td valign="top">rs:pageLength</td><td>number of records to return</td></tr>
+		</table>
+		</td>
+        <td valign="top" style ="font-family:'Courier New'">Searches entire Origin data hub.<hr/>Returns search results using custom snippets with highlighting.<hr/></td>
+    </tr>
+    <tr>
+        <td valign="top">GET</td>
+        <td valign="top">/spreadsheet/search</td>
+        <td valign="top">
+		<table>
+			<tr><td valign="top">rs:q</td><td>query string<hr/>leading and trailing wildcards<hr/>constraints:<ul><li>dname</li><li>row</li><li>col</li><li>cell</li><li>user</li></ul><hr/>Structured query used to aggregate values (SUM, AVG, etc.)</td></tr>
+			<tr><td valign="top">rs:start</td><td>starting record</td></tr>
+			<tr><td valign="top">rs:pageLength</td><td>number of records to return</td></tr>
+		</table>
+		</td>
+        <td valign="top" style ="font-family:'Courier New'">Search across all spreadsheet data of all users.<hr/>Returns search results using custom snippets with highlighting.<hr/></td>
+    </tr>
+    <tr>
+        <td valign="top">GET</td>
+        <td valign="top">/spreadsheet/{user}/search</td>
+        <td valign="top">
+		<table>
+			<tr><td valign="top">rs:q</td><td>query string<hr/>leading and trailing wildcards<hr/>constraints:<ul><li>dname</li><li>row</li><li>col</li><li>cell</li></ul><hr/>Structured query used to aggregate values (SUM, AVG, etc.)</td></tr>
+			<tr><td valign="top">rs:start</td><td>starting record</td></tr>
+			<tr><td valign="top">rs:pageLength</td><td>number of records to return</td></tr>
+		</table>
+		</td>
+        <td valign="top" style ="font-family:'Courier New'">Search across all spreadsheets of a specific user.<hr/>Returns search results using custom snippets with highlighting.<hr/></td>
+    </tr>
+    <tr>
+        <td valign="top">GET</td>
+        <td valign="top">/spreadsheet/{user}/{docid}/search</td>
+        <td valign="top">
+		<table>
+			<tr><td valign="top">rs:q</td><td>query string<hr/>leading and trailing wildcards<hr/>constraints:<ul><li>dname</li><li>row</li><li>col</li><li>cell</li></ul><hr/>Structured query used to aggregate values (SUM, AVG, etc.)</td></tr>
+			<tr><td valign="top">rs:start</td><td>starting record</td></tr>
+			<tr><td valign="top">rs:pageLength</td><td>number of records to return</td></tr>
+		</table>
+		</td>
+        <td valign="top" style ="font-family:'Courier New'">Search within specific spreadsheet data.<hr/>Returns search results using custom snippets with highlighting.<hr/></td>
+    </tr>
+    <tr>
+        <td valign="top" colspan="4"><b>Spreadsheet Management APIs</b></td>
     </tr>
     <tr>
         <td valign="top">GET</td>
@@ -170,46 +221,6 @@ return "done"
 			</table>
 		</td>
         <td valign="top" style ="font-family:'Courier New'">Deletes spreadsheet data.</td>
-    </tr>
-    <tr>
-        <td valign="top" colspan="4"><b>Search APIs</b></td>
-    </tr>
-    <tr>
-        <td valign="top">GET</td>
-        <td valign="top">/search</td>
-        <td valign="top">
-		<table>
-			<tr><td valign="top">rs:q</td><td>query string</td></tr>
-			<tr><td valign="top">rs:start</td><td>starting record</td></tr>
-			<tr><td valign="top">rs:pageLength</td><td>number of records to return</td></tr>
-		</table>
-		</td>
-        <td valign="top" style ="font-family:'Courier New'">Searches entire Origin data hub.<hr/>Returns search results using custom snippets with highlighting.<hr/></td>
-    </tr>
-    <tr>
-        <td valign="top">GET</td>
-        <td valign="top">/spreadsheet/search</td>
-        <td valign="top">
-		<table>
-			<tr><td valign="top">rs:q</td><td>query string</td></tr>
-			<tr><td valign="top">rs:start</td><td>starting record</td></tr>
-			<tr><td valign="top">rs:pageLength</td><td>number of records to return</td></tr>
-		</table>
-		</td>
-        <td valign="top" style ="font-family:'Courier New'">Search across spreadsheet data only.<hr/>Returns search results using custom snippets with highlighting.<hr/></td>
-    </tr>
-    <tr>
-        <td valign="top">GET</td>
-        <td valign="top">/spreadsheet/{uri}/search</td>
-        <td valign="top">
-			<table>
-				<tr><td valign="top" colspan="2"><b>uri</b> parameter is embedded in request URL</td></tr>
-				<tr><td valign="top">rs:q</td><td>query string</td></tr>
-				<tr><td valign="top">rs:start</td><td>starting record</td></tr>
-				<tr><td valign="top">rs:pageLength</td><td>number of records to return</td></tr>
-			</table>
-		</td>
-        <td valign="top" style ="font-family:'Courier New'">Search within specific spreadsheet data.</td>
     </tr>
     <tr>
         <td valign="top" colspan="4"><b>Document APIs</b></td>
