@@ -108,11 +108,11 @@ let $doc1 :=
           return
           element { fn:QName($NS, "definedName") }
           {
-            element { fn:QName($NS, "defName") } { $att },
-            element { fn:QName($NS, "sheet") }   { $sheet },
-            element { fn:QName($NS, "col") }     { $col },
-            element { fn:QName($NS, "row") }     { $row },
-            element { fn:QName($NS, "pos") }     { $pos }
+            element { fn:QName($NS, "dname") } { $att },
+            element { fn:QName($NS, "sheet") } { $sheet },
+            element { fn:QName($NS, "col") }   { $col },
+            element { fn:QName($NS, "row") }   { $row },
+            element { fn:QName($NS, "pos") }   { $pos }
           }
       },
       $workSheets

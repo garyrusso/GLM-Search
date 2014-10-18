@@ -159,7 +159,6 @@ declare variable $c:REST-SEARCH-OPTIONS :=
         <element ns="http://tax.thomsonreuters.com" name="importedAccountCode"/>
         <element ns="http://tax.thomsonreuters.com" name="beginningBalance"/>
         <element ns="http://tax.thomsonreuters.com" name="endingBalance"/>
-        <element ns="http://tax.thomsonreuters.com" name="type"/>
       </preferred-elements>
     </transform-results>
     <return-results>true</return-results>
@@ -256,7 +255,6 @@ declare variable $c:SEARCH-OPTIONS :=
         <element ns="http://tax.thomsonreuters.com" name="importedAccountCode"/>
         <element ns="http://tax.thomsonreuters.com" name="beginningBalance"/>
         <element ns="http://tax.thomsonreuters.com" name="endingBalance"/>
-        <element ns="http://tax.thomsonreuters.com" name="type"/>
       </preferred-elements>
     </transform-results>
     <operator name="results">
@@ -270,7 +268,6 @@ declare variable $c:SEARCH-OPTIONS :=
             <element ns="http://tax.thomsonreuters.com" name="importedAccountCode"/>
             <element ns="http://tax.thomsonreuters.com" name="beginningBalance"/>
             <element ns="http://tax.thomsonreuters.com" name="endingBalance"/>
-            <element ns="http://tax.thomsonreuters.com" name="type"/>
           </preferred-elements>
           <per-match-tokens>30</per-match-tokens>
           <max-matches>4</max-matches>
@@ -287,7 +284,6 @@ declare variable $c:SEARCH-OPTIONS :=
             <element ns="http://tax.thomsonreuters.com" name="importedAccountCode"/>
             <element ns="http://tax.thomsonreuters.com" name="beginningBalance"/>
             <element ns="http://tax.thomsonreuters.com" name="endingBalance"/>
-            <element ns="http://tax.thomsonreuters.com" name="type"/>
           </preferred-elements>
           <per-match-tokens>30</per-match-tokens>
           <max-matches>4</max-matches>
