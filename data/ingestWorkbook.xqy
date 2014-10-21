@@ -8,150 +8,241 @@ declare variable $OPTIONS as element () :=
                  </options>;
 
 (:~
+ : Iterate the network directory where the spreadsheet files (xslx files) reside.
+ : Traverses the network directory recursively.
+ :
+ : @param $path The network directory where the XLSX files reside.
+ :
+ : Returns the complete list of XLSX files.
+ :)
+declare function local:loadDirectory($path as xs:string)
+{
+  try
+  {
+    for $entry in xdmp:filesystem-directory($path)/dir:entry
+      let $subpath := $entry/dir:pathname/text()
+        return
+          if ( $entry/dir:type = 'directory' ) then
+            local:loadDirectory($subpath)
+          else
+            $subpath
+  }
+  catch ($e) {()}
+};
+
+(:~
  : Get Value from Defined Name
  :
  : @param $cell
  : @param $doc
  :)
-declare function local:getValue($cell as xs:string, $sheetName as xs:string, $table, $rels, $wkBook)
+declare function local:getValue($row as xs:string, $col as xs:string, $sheetName as xs:string, $table, $rels, $wkBook, $sharedStrings)
 {
   let $wkSheetKey := "xl/"||xs:string($rels/*:Relationship[@Id=$wkBook[@name=$sheetName]/@*:id]/@Target)
 
-  let $relWkSheet := map:get($table, $wkSheetKey)
-  let $value      := $relWkSheet/*:worksheet/*:sheetData/*:row/*:c[@r=$cell]/*:v/text()
+  let $wkSheet := map:get($table, $wkSheetKey)
+  let $item     := $wkSheet/*:worksheet/*:sheetData/*:row[@r=$row]/*:c[@r=$col||$row]
 
-  return $value
+  let $ref     := $item/@t
+  let $value   := xs:string($item/*:v)
+
+  let $retVal  := if ($ref eq "s") then $sharedStrings[xs:integer($value) + 1] else $value
+
+let $log := xdmp:log("111----- cell  = "||$col||$row)
+let $log := xdmp:log("111----- value = "||$retVal)
+
+  return $retVal
 };
 
-let $zipfile  := "/tmp/Book1.xlsx"
-let $zipfile2 := "/tmp/AMC_TB_Upload_Batch_Processing.xlsm"
-let $doc      := xdmp:document-get($zipfile)
+(:~
+ : Get Value from Defined Name
+ :
+ : @param $cell
+ : @param $doc
+ :)
+declare function local:getLabelValue($row as xs:string, $col as xs:string, $sheetName as xs:string, $table, $rels, $wkBook, $sharedStrings)
+{
+  let $leftCell := local:getLeftCell($col)
 
-let $binFile := fn:tokenize($zipfile, "/")[fn:last()]
-let $dir     := "/user/grusso/"||fn:lower-case(fn:tokenize($binFile, "\.")[1])||"/"
-let $fileUri := $dir||"files/"||$binFile
+let $log := xdmp:log("1----- getLabelValue() leftCell  = "||$leftCell)
 
-let $exclude :=
-(
-  "[Content_Types].xml", "docProps/app.xml", "xl/theme/theme1.xml", "xl/styles.xml", "_rels/.rels",
-  "xl/printerSettings/printerSettings1.bin", "xl/printerSettings/printerSettings2.bin",
-  "xl/printerSettings/printerSettings3.bin", "xl/printerSettings/printerSettings4.bin",
-  "xl/printerSettings/printerSettings5.bin",
-  "xl/vbaProject.bin", "xl/media/image1.png"
-)
+  let $retVal   := local:getValue($row, $leftCell, $sheetName, $table, $rels, $wkBook, $sharedStrings)
 
-let $table := map:map()
+let $log := xdmp:log("1----- getLabelValue() cell  = "||$col||$row)
+let $log := xdmp:log("1----- getLabelValue() label = "||$retVal)
+
+  return $retVal
+};
+
+(:~
+ : Get left cell
+ :
+ : @param $cell
+ :)
+declare function local:getLeftCell($col as xs:string)
+{
+  let $upperCol      := fn:upper-case($col)
+  let $lastCharCode  := fn:string-to-codepoints($upperCol)[fn:last()]
+  let $decrementChar := fn:codepoints-to-string(fn:string-to-codepoints($upperCol)[fn:last()] - 1)
+
+  return
+    if (($lastCharCode) eq 65) then  (: "A" :)
+      $upperCol
+    else
+      fn:substring($upperCol, 1, fn:string-length($upperCol) - 1)||$decrementChar
+};
+
+(:~
+ : Generate File URI
+ :
+ : @param $cell
+ :)
+declare function local:generateFileUri($user as xs:string, $fileName as xs:string)
+{
+  let $fileUri := "/user/"||$user||"/files/"||fn:tokenize($fileName, "/")[4]
+  
+  return $fileUri
+};
+
+(:~
+ : Extract Spreadsheet Data
+ :
+ : @param $zipfile
+ :)
+declare function local:extractSpreadsheetData($user as xs:string, $zipFile as xs:string)
+{
+  let $excelFile := xdmp:document-get($zipFile)
+
+  let $exclude :=
+  (
+    "[Content_Types].xml", "docProps/app.xml", "xl/theme/theme1.xml", "xl/styles.xml", "_rels/.rels",
+    "xl/printerSettings/printerSettings1.bin", "xl/printerSettings/printerSettings2.bin",
+    "xl/printerSettings/printerSettings3.bin", "xl/printerSettings/printerSettings4.bin",
+    "xl/printerSettings/printerSettings5.bin",
+    "xl/vbaProject.bin", "xl/media/image1.png"
+  )
+
+  let $table := map:map()
+  
+  let $docs :=
+    for $x in xdmp:zip-manifest($excelFile)//zip:part/text()
+      where (($x = $exclude) eq fn:false())
+        return
+          map:put($table, $x, xdmp:zip-get($excelFile, $x, $OPTIONS))
+
+  let $defnames      := map:get($table, "xl/workbook.xml")/*:workbook/*:definedNames/node()
+  let $wkBook        := map:get($table, "xl/workbook.xml")/*:workbook/*:sheets/*:sheet
+  let $rels          := map:get($table, "xl/_rels/workbook.xml.rels")/*:Relationships
+  let $sharedStrings := map:get($table, "xl/sharedStrings.xml")/*:sst/*:si/*:t/text()
+
+  let $workSheets :=
+    element { fn:QName($NS, "worksheets") }
+    {
+      for $ws in $wkBook
+        let $wkSheetKey := "xl/"||xs:string($rels/*:Relationship[@Id=$ws/@*:id/fn:string()]/@Target)
+        let $relWkSheet := map:get($table, $wkSheetKey)
+        let $dim := $relWkSheet/*:worksheet/*:dimension/@ref/fn:string()
+          return
+            element { fn:QName($NS, "worksheet") }
+            {
+              element { fn:QName($NS, "name") } { $ws/@name/fn:string() },
+              element { fn:QName($NS, "key") } { $wkSheetKey },
+              element { fn:QName($NS, "dimension") }
+              {
+                element { fn:QName($NS, "topLeft") } { fn:tokenize($dim, ":") [1] },
+                element { fn:QName($NS, "bottomRight") } { fn:tokenize($dim, ":") [2] }
+              },
+              element { fn:QName($NS, "sheetData") }
+              {
+                for $cell in $relWkSheet/*:worksheet/*:sheetData/*:row
+                  let $row  := xs:string($cell/@r)
+                  for $column in $cell/ssml:c
+                    let $pos   := xs:string($column/@r)
+                    let $col   := fn:substring($pos, 1, 1)  (: fix this :)
+                    let $ref   := xs:string($column/@t)
+                    let $value := xs:string($column/*:v)
+                    let $val   := if ($ref eq "s") then $sharedStrings[xs:integer($value) + 1] else $value
+                    let $type  := if ($ref eq "s") then "string" else "integer"
+                    let $pos2  := xdmp:path($column)
+                    return
+                      element { fn:QName($NS, "cell") }
+                      {
+                        element { fn:QName($NS, "col") }   { $col },
+                        element { fn:QName($NS, "row") }   { $row },
+                        element { fn:QName($NS, "pos") }   { $pos },
+                        element { fn:QName($NS, "type") }  { $type },
+                        element { fn:QName($NS, "val") }   { $val }
+                      }
+              }
+            }
+    }
+    
+  let $doc :=
+    element { fn:QName($NS, "workbook") }
+    {
+      element { fn:QName($NS, "meta") }
+      {
+        element { fn:QName($NS, "type") }      { "workbook" },
+        element { fn:QName($NS, "user") }      { $user },
+        element { fn:QName($NS, "client") }    { "Thomson Reuters" },
+        element { fn:QName($NS, "creator") }   { map:get($table, "docProps/core.xml")/*:coreProperties/*:creator/text() },
+        element { fn:QName($NS, "file") }      { local:generateFileUri($user, $zipFile) },
+        element { fn:QName($NS, "lastModifiedBy") } { map:get($table, "docProps/core.xml")/*:coreProperties/*:lastModifiedBy/text() },
+        element { fn:QName($NS, "created") }   { map:get($table, "docProps/core.xml")/*:coreProperties/*:created/text() },
+        element { fn:QName($NS, "modified") }  { map:get($table, "docProps/core.xml")/*:coreProperties/*:modified/text() }
+      },
+      element { fn:QName($NS, "feed") }
+      {
+        element { fn:QName($NS, "definedNames") }
+        {
+          for $dn in $defnames
+            let $att    := xs:string($dn/@name)
+            let $sheet  := fn:tokenize($dn/text(), "!") [1]
+            let $cell   := fn:tokenize($dn/text(), "!") [2]
+            let $pos    := fn:replace($cell, "\$", "")
+            let $col    := fn:tokenize($pos, "[0-9]") [1]
+            let $row    := fn:tokenize($pos, "[A-Za-z]+") [2]
+            let $lblCol := $col
+            let $label := local:getLabelValue($row, $col, $sheet, $table, $rels, $wkBook, $sharedStrings)
+            let $val   := local:getValue($row, $col, $sheet, $table, $rels, $wkBook, $sharedStrings)
+            return
+            element { fn:QName($NS, "definedName") }
+            {
+              element { fn:QName($NS, "dname") }  { $att },
+              element { fn:QName($NS, "dlabel") } { $label },
+              element { fn:QName($NS, "sheet") }  { $sheet },
+              element { fn:QName($NS, "col") }    { $col },
+              element { fn:QName($NS, "row") }    { $row },
+              element { fn:QName($NS, "pos") }    { $pos },
+              element { fn:QName($NS, "dvalue") } { $val }
+            }
+        },
+        $workSheets
+      }
+    }
+
+  return $doc
+};
+
+let $userDir := "/tmp/sandraday/"
+let $user    := fn:tokenize($userDir, "/")[3]
+
+let $zipFileList := local:loadDirectory($userDir)
 
 let $docs :=
-  for $x in xdmp:zip-manifest($doc)//zip:part/text()
-    where (($x = $exclude) eq fn:false())
-    return
-      map:put($table, $x, xdmp:zip-get($doc, $x, $OPTIONS))
+  for $zipFile in $zipFileList
+    let $doc     := local:extractSpreadsheetData($user, $zipFile)
+    let $dir     := "/user/"||$user||"/"
+    let $uri     := $dir||xdmp:hash64($doc)||".xml"
+    let $fileUri := local:generateFileUri($user, $zipFile)
+    let $binDoc  := xdmp:document-get($zipFile)
+      return
+      (
+      (:
+        $doc
+      :)
+        xdmp:document-insert($uri, $doc, xdmp:default-permissions(), ("spreadsheet")),
+        xdmp:document-insert($fileUri, $binDoc, xdmp:default-permissions(), ("spreadsheet"))
+      )
 
-let $defnames  := map:get($table, "xl/workbook.xml")/*:workbook/*:definedNames/node()
-
-let $wkBook := map:get($table, "xl/workbook.xml")/*:workbook/*:sheets/*:sheet
-let $rels   := map:get($table, "xl/_rels/workbook.xml.rels")/*:Relationships
-let $sharedStrings := map:get($table, "xl/sharedStrings.xml")/*:sst/*:si/*:t/text()
-
-let $workSheets :=
-  element { fn:QName($NS, "worksheets") }
-  {
-    for $ws in $wkBook
-      let $wkSheetKey := "xl/"||xs:string($rels/*:Relationship[@Id=$ws/@*:id/fn:string()]/@Target)
-      let $relWkSheet := map:get($table, $wkSheetKey)
-      let $dim := $relWkSheet/*:worksheet/*:dimension/@ref/fn:string()
-        return
-          element { fn:QName($NS, "worksheet") }
-          {
-            element { fn:QName($NS, "name") } { $ws/@name/fn:string() },
-            element { fn:QName($NS, "key") } { $wkSheetKey },
-            element { fn:QName($NS, "dimension") }
-            {
-              element { fn:QName($NS, "topLeft") } { fn:tokenize($dim, ":") [1] },
-              element { fn:QName($NS, "bottomRight") } { fn:tokenize($dim, ":") [2] }
-            },
-            element { fn:QName($NS, "sheetData") }
-            {
-              for $cell in $relWkSheet/*:worksheet/*:sheetData/*:row
-                let $row  := xs:string($cell/@r)
-                for $column in $cell/ssml:c
-                  let $pos   := xs:string($column/@r)
-                  let $col   := fn:substring($pos, 1, 1)  (: fix this :)
-                  let $ref   := xs:string($column/@t)
-                  let $value := xs:string($column/*:v)
-                  let $val   := if ($ref eq "s") then $sharedStrings[xs:integer($value) + 1] else $value
-                  let $type  := if ($ref eq "s") then "string" else "integer"
-                  let $pos2  := xdmp:path($column)
-                  return
-                    element { fn:QName($NS, "cell") }
-                    {
-                      element { fn:QName($NS, "col") }   { $col },
-                      element { fn:QName($NS, "row") }   { $row },
-                      element { fn:QName($NS, "pos") }   { $pos },
-                      element { fn:QName($NS, "type") }  { $type },
-                      element { fn:QName($NS, "val") }   { $val }
-                    }
-            }
-          }
-  }
-
-let $doc1 :=
-  element { fn:QName($NS, "workbook") }
-  {
-    element { fn:QName($NS, "meta") }
-    {
-      element { fn:QName($NS, "type") }      { "workbook" },
-      element { fn:QName($NS, "user") }      { "grusso" },
-      element { fn:QName($NS, "client") }    { "Thomson Reuters" },
-      element { fn:QName($NS, "creator") }   { map:get($table, "docProps/core.xml")/*:coreProperties/*:creator/text() },
-      element { fn:QName($NS, "file") }      { $fileUri },
-      element { fn:QName($NS, "lastModifiedBy") } { map:get($table, "docProps/core.xml")/*:coreProperties/*:lastModifiedBy/text() },
-      element { fn:QName($NS, "created") }   { map:get($table, "docProps/core.xml")/*:coreProperties/*:created/text() },
-      element { fn:QName($NS, "modified") }  { map:get($table, "docProps/core.xml")/*:coreProperties/*:modified/text() }
-    },
-    element { fn:QName($NS, "feed") }
-    {
-      element { fn:QName($NS, "definedNames") }
-      {
-        for $dn in $defnames
-          let $att := xs:string($dn/@name)
-          let $sheet := fn:tokenize($dn/text(), "!") [1]
-          let $cell  := fn:tokenize($dn/text(), "!") [2]
-          let $pos   := fn:replace($cell, "\$", "")
-          let $col   := fn:tokenize($pos, "[0-9]") [1]
-          let $row   := fn:tokenize($pos, "[A-Za-z]+") [2]
-          let $val   := local:getValue($pos, $sheet, $table, $rels, $wkBook)
-          return
-          element { fn:QName($NS, "definedName") }
-          {
-            element { fn:QName($NS, "dname") } { $att },
-            element { fn:QName($NS, "sheet") } { $sheet },
-            element { fn:QName($NS, "col") }   { $col },
-            element { fn:QName($NS, "row") }   { $row },
-            element { fn:QName($NS, "pos") }   { $pos },
-            element { fn:QName($NS, "value") } { $val }
-          }
-      },
-      $workSheets
-    }
-  }
-
-let $uri := $dir||xdmp:hash64($doc1)||".xml"
-let $cell  := "C4"
-
-return
-(
-(:
-  for $dn1 in $doc1/*:feed/*:definedNames/*:definedName return $dn1/*:dname/text()||" | "||$dn1/*:sheet/text(),
-  for $dn2 in $doc1/*:feed/*:definedNames/*:definedName
-    return
-      local:getValue($cell, $dn2/*:sheet/text(), $table, $rels, $wkBook),
-  $wkBook[1],
-  $wkBook[1]/@name,
-  $rels,
-  $doc1
-:)
-  xdmp:document-insert($uri, $doc1, xdmp:default-permissions(), ("spreadsheet")),
-  xdmp:document-insert($fileUri, $doc, xdmp:default-permissions(), ("spreadsheet"))
-)
+return $docs
