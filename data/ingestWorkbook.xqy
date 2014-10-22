@@ -170,7 +170,7 @@ declare function local:extractSpreadsheetData($user as xs:string, $zipFile as xs
                         element { fn:QName($NS, "col") }   { $col },
                         element { fn:QName($NS, "row") }   { $row },
                         element { fn:QName($NS, "pos") }   { $pos },
-                        element { fn:QName($NS, "type") }  { $type },
+                        element { fn:QName($NS, "dtype") } { $type },
                         element { fn:QName($NS, "val") }   { $val }
                       }
               }
@@ -224,7 +224,7 @@ declare function local:extractSpreadsheetData($user as xs:string, $zipFile as xs
   return $doc
 };
 
-let $userDir := "/tmp/sandraday/"
+let $userDir := "/tmp/users/sandraday/"
 let $user    := fn:tokenize($userDir, "/")[3]
 
 let $zipFileList := local:loadDirectory($userDir)
@@ -242,7 +242,7 @@ let $docs :=
         $doc
       :)
         xdmp:document-insert($uri, $doc, xdmp:default-permissions(), ("spreadsheet")),
-        xdmp:document-insert($fileUri, $binDoc, xdmp:default-permissions(), ("spreadsheet"))
+        xdmp:document-insert($fileUri, $binDoc, xdmp:default-permissions(), ("binary"))
       )
 
 return $docs
