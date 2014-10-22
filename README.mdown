@@ -107,6 +107,21 @@ return "done"
         <td valign="top" style ="font-family:'Courier New'">Search within specific spreadsheet data.<hr/>Returns search results using custom snippets with highlighting.<hr/>Structured query used to aggregate values (SUM, AVG, etc.)</td>
     </tr>
     <tr>
+        <td valign="top" colspan="4"><b>Spreadsheet Aggregate API</b></td>
+    </tr>
+    <tr>
+        <td valign="top">GET</td>
+        <td valign="top">/aggregate</td>
+        <td valign="top">
+		<table>
+			<tr><td valign="top">rs:field</td><td>field name</td></tr>
+			<tr><td valign="top">rs:user</td><td>user (optional)</td></tr>
+			<tr><td valign="top">rs:txid</td><td>txid (optional)</td></tr>
+		</table>
+		</td>
+        <td valign="top" style ="font-family:'Courier New'">Search all spreadsheet data for items using the specifed "named field".<hr/>Returns valus associated with the "named field". It also returns the sum and the average of the values.<hr/>If no user is parameter is specfied then system will widen scope of search and search all spreadsheet data.</td>
+    </tr>
+    <tr>
         <td valign="top" colspan="4"><b>Spreadsheet Management APIs</b></td>
     </tr>
     <tr>
