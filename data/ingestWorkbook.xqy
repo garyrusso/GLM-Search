@@ -163,7 +163,6 @@ declare function local:extractSpreadsheetData($user as xs:string, $zipFile as xs
                     let $value := xs:string($column/*:v)
                     let $val   := if ($ref eq "s") then $sharedStrings[xs:integer($value) + 1] else $value
                     let $type  := if ($ref eq "s") then "string" else "integer"
-                    let $pos2  := xdmp:path($column)
                     return
                       element { fn:QName($NS, "cell") }
                       {

@@ -218,6 +218,9 @@ function tr:get(
         <values>{$values}</values>
         <sum>{fn:sum($values)}</sum>
         <avg>{fn:avg($values)}</avg>
+        <min>{fn:min($values)}</min>
+        <max>{fn:max($values)}</max>
+        <stddev>{math:stddev($values)}</stddev>
       </response>
     }
 };
