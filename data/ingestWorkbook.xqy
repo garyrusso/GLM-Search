@@ -60,7 +60,7 @@ let $log := xdmp:log("111----- value = "||$retVal)
  : @param $cell
  : @param $doc
  :)
-declare function local:getLabelValue($row as xs:string, $col as xs:string, $sheetName as xs:string, $table, $rels, $wkBook, $sharedStrings)
+declare function local:getLabelValue1($row as xs:string, $col as xs:string, $sheetName as xs:string, $table, $rels, $wkBook, $sharedStrings)
 {
   let $leftCell := local:getLeftCell($col)
 
@@ -75,21 +75,51 @@ let $log := xdmp:log("1----- getLabelValue() label = "||$retVal)
 };
 
 (:~
- : Get left cell
+ : Entry point to a recursive function.
  :
- : @param $cell
+ : @param $row
  :)
+declare function local:findLabel($row as xs:string, $col as xs:string, $sheetName as xs:string, $table, $rels, $wkBook, $sharedStrings) as xs:string*
+{
+  let $leftLabelVal := local:getLabelValue($row, $col, $sheetName, $table, $rels, $wkBook, $sharedStrings)
+
+let $log := xdmp:log("1----- findLabel() leftLabelVal = "||$leftLabelVal)
+
+  return $leftLabelVal
+};
+
+declare function local:getLabelValue($row as xs:string, $col as xs:string, $sheetName as xs:string, $table, $rels, $wkBook, $sharedStrings)
+{
+  let $pattern  := "[a-zA-Z]"
+
+  let $leftCell := local:getLeftCell($col)
+  
+let $log := xdmp:log("1----- getLabelValue() cell  = "||$col||$row)
+let $log := xdmp:log("1----- getLabelValue() value = "||local:getValue($row, $leftCell, $sheetName, $table, $rels, $wkBook, $sharedStrings))
+
+  return
+    if (fn:matches(local:getValue($row, $leftCell, $sheetName, $table, $rels, $wkBook, $sharedStrings), $pattern) or
+        (fn:string-to-codepoints($leftCell) lt 66)) then
+      local:getValue($row, $leftCell, $sheetName, $table, $rels, $wkBook, $sharedStrings)
+    else
+      local:getLabelValue($row, $leftCell, $sheetName, $table, $rels, $wkBook, $sharedStrings)
+};
+
 declare function local:getLeftCell($col as xs:string)
 {
   let $upperCol      := fn:upper-case($col)
   let $lastCharCode  := fn:string-to-codepoints($upperCol)[fn:last()]
   let $decrementChar := fn:codepoints-to-string(fn:string-to-codepoints($upperCol)[fn:last()] - 1)
 
-  return
+  let $retVal :=
     if (($lastCharCode) eq 65) then  (: "A" :)
       $upperCol
     else
       fn:substring($upperCol, 1, fn:string-length($upperCol) - 1)||$decrementChar
+
+let $log := xdmp:log("1----- getLeftCell() leftCell  = "||$retVal)
+
+  return $retVal
 };
 
 (:~
@@ -99,7 +129,7 @@ declare function local:getLeftCell($col as xs:string)
  :)
 declare function local:generateFileUri($user as xs:string, $fileName as xs:string)
 {
-  let $fileUri := "/user/"||$user||"/files/"||fn:tokenize($fileName, "/")[4]
+  let $fileUri := "/user/"||$user||"/files/"||fn:tokenize($fileName, "/")[fn:last()]
   
   return $fileUri
 };
@@ -202,19 +232,19 @@ declare function local:extractSpreadsheetData($user as xs:string, $zipFile as xs
             let $col    := fn:tokenize($pos, "[0-9]") [1]
             let $row    := fn:tokenize($pos, "[A-Za-z]+") [2]
             let $lblCol := $col
-            let $label := local:getLabelValue($row, $col, $sheet, $table, $rels, $wkBook, $sharedStrings)
-            let $val   := local:getValue($row, $col, $sheet, $table, $rels, $wkBook, $sharedStrings)
-            return
-            element { fn:QName($NS, "definedName") }
-            {
-              element { fn:QName($NS, "dname") }  { $att },
-              element { fn:QName($NS, "dlabel") } { $label },
-              element { fn:QName($NS, "sheet") }  { $sheet },
-              element { fn:QName($NS, "col") }    { $col },
-              element { fn:QName($NS, "row") }    { $row },
-              element { fn:QName($NS, "pos") }    { $pos },
-              element { fn:QName($NS, "dvalue") } { $val }
-            }
+            let $val    := local:getValue($row, $col, $sheet, $table, $rels, $wkBook, $sharedStrings)
+            let $label  := local:findLabel($row, $col, $sheet, $table, $rels, $wkBook, $sharedStrings)
+              return
+                element { fn:QName($NS, "definedName") }
+                {
+                  element { fn:QName($NS, "dname") }  { $att },
+                  element { fn:QName($NS, "dlabel") } { $label },
+                  element { fn:QName($NS, "sheet") }  { $sheet },
+                  element { fn:QName($NS, "col") }    { $col },
+                  element { fn:QName($NS, "row") }    { $row },
+                  element { fn:QName($NS, "pos") }    { $pos },
+                  element { fn:QName($NS, "dvalue") } { $val }
+                }
         },
         $workSheets
       }
@@ -224,12 +254,12 @@ declare function local:extractSpreadsheetData($user as xs:string, $zipFile as xs
 };
 
 let $userDir := "/tmp/users/sandraday/"
-let $user    := fn:tokenize($userDir, "/")[3]
+let $user    := fn:tokenize($userDir, "/")[fn:last()-1]
 
 let $zipFileList := local:loadDirectory($userDir)
 
 let $docs :=
-  for $zipFile in $zipFileList
+  for $zipFile in $zipFileList[1 to 1]
     let $doc     := local:extractSpreadsheetData($user, $zipFile)
     let $dir     := "/user/"||$user||"/"
     let $uri     := $dir||xdmp:hash64($doc)||".xml"
@@ -237,11 +267,11 @@ let $docs :=
     let $binDoc  := xdmp:document-get($zipFile)
       return
       (
+        $uri, $fileUri, $doc
       (:
-        $doc
-      :)
         xdmp:document-insert($uri, $doc, xdmp:default-permissions(), ("spreadsheet")),
         xdmp:document-insert($fileUri, $binDoc, xdmp:default-permissions(), ("binary"))
+      :)
       )
 
 return $docs
