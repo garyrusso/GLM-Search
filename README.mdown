@@ -68,7 +68,7 @@ return "done"
 			<tr><td valign="top">rs:pageLength</td><td>number of records to return</td></tr>
 		</table>
 		</td>
-        <td valign="top" style ="font-family:'Courier New'">Searches entire Origin data hub.<hr/>Returns search results using custom snippets with highlighting.<hr/>Structured query used to aggregate values (SUM, AVG, etc.)</td>
+        <td valign="top" style ="font-family:'Courier New'">Searches entire data hub.<hr/>Returns search results using custom snippets with highlighting.</td>
     </tr>
     <tr>
         <td valign="top">GET</td>
@@ -80,7 +80,7 @@ return "done"
 			<tr><td valign="top">rs:pageLength</td><td>number of records to return</td></tr>
 		</table>
 		</td>
-        <td valign="top" style ="font-family:'Courier New'">Search across all spreadsheet data of all users.<hr/>Returns search results using custom snippets with highlighting.<hr/>Structured query used to aggregate values (SUM, AVG, etc.)</td>
+        <td valign="top" style ="font-family:'Courier New'">Search across all spreadsheet data of all users.<hr/>Returns search results using custom snippets with highlighting.</td>
     </tr>
     <tr>
         <td valign="top">GET</td>
@@ -104,7 +104,7 @@ return "done"
 			<tr><td valign="top">rs:pageLength</td><td>number of records to return</td></tr>
 		</table>
 		</td>
-        <td valign="top" style ="font-family:'Courier New'">Search within specific spreadsheet data.<hr/>Returns search results using custom snippets with highlighting.<hr/>Structured query used to aggregate values (SUM, AVG, etc.)</td>
+        <td valign="top" style ="font-family:'Courier New'">Search within specific spreadsheet data.<hr/>Returns search results using custom snippets with highlighting.</td>
     </tr>
     <tr>
         <td valign="top" colspan="4"><b>Spreadsheet Aggregate API</b></td>
