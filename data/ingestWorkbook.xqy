@@ -1,5 +1,6 @@
 declare namespace zip  = "xdmp:zip";
 declare namespace ssml = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
+declare namespace tax  = "http://tax.thomsonreuters.com";
 
 declare variable $NS := "http://tax.thomsonreuters.com";
 declare variable $OPTIONS as element () :=
@@ -48,9 +49,6 @@ declare function local:getValue($row as xs:string, $col as xs:string, $sheetName
 
   let $retVal  := if ($ref eq "s") then $sharedStrings[xs:integer($value) + 1] else $value
 
-let $log := xdmp:log("111----- cell  = "||$col||$row)
-let $log := xdmp:log("111----- value = "||$retVal)
-
   return $retVal
 };
 
@@ -64,12 +62,7 @@ declare function local:getLabelValue1($row as xs:string, $col as xs:string, $she
 {
   let $leftCell := local:getLeftCell($col)
 
-let $log := xdmp:log("1----- getLabelValue() leftCell  = "||$leftCell)
-
   let $retVal   := local:getValue($row, $leftCell, $sheetName, $table, $rels, $wkBook, $sharedStrings)
-
-let $log := xdmp:log("1----- getLabelValue() cell  = "||$col||$row)
-let $log := xdmp:log("1----- getLabelValue() label = "||$retVal)
 
   return $retVal
 };
@@ -83,8 +76,6 @@ declare function local:findLabel($row as xs:string, $col as xs:string, $sheetNam
 {
   let $leftLabelVal := local:getLabelValue($row, $col, $sheetName, $table, $rels, $wkBook, $sharedStrings)
 
-let $log := xdmp:log("1----- findLabel() leftLabelVal = "||$leftLabelVal)
-
   return $leftLabelVal
 };
 
@@ -93,9 +84,6 @@ declare function local:getLabelValue($row as xs:string, $col as xs:string, $shee
   let $pattern  := "[a-zA-Z]"
 
   let $leftCell := local:getLeftCell($col)
-  
-let $log := xdmp:log("1----- getLabelValue() cell  = "||$col||$row)
-let $log := xdmp:log("1----- getLabelValue() value = "||local:getValue($row, $leftCell, $sheetName, $table, $rels, $wkBook, $sharedStrings))
 
   return
     if (fn:matches(local:getValue($row, $leftCell, $sheetName, $table, $rels, $wkBook, $sharedStrings), $pattern) or
@@ -116,8 +104,6 @@ declare function local:getLeftCell($col as xs:string)
       $upperCol
     else
       fn:substring($upperCol, 1, fn:string-length($upperCol) - 1)||$decrementChar
-
-let $log := xdmp:log("1----- getLeftCell() leftCell  = "||$retVal)
 
   return $retVal
 };
@@ -205,7 +191,112 @@ declare function local:extractSpreadsheetData($user as xs:string, $zipFile as xs
               }
             }
     }
-    
+
+  let $defNamePass1Doc :=
+        element { fn:QName($NS, "definedNames") }
+        {
+          for $dn in $defnames
+            let $att    := xs:string($dn/@name)
+            let $sheet  := fn:tokenize($dn/text(), "!") [1]
+            let $cell   := fn:tokenize($dn/text(), "!") [2]
+            let $pos    := fn:replace($cell, "\$", "")
+            
+            let $pos1   := fn:tokenize($pos, ":") [1]
+            let $pos2   := fn:tokenize($pos, ":") [2]
+            
+            let $col    := fn:tokenize($pos1, "[0-9]") [1]
+            let $row    := fn:tokenize($pos1, "[A-Za-z]+") [2]
+            
+            let $expand :=
+              if (fn:empty($pos2)) then
+                ()
+              else
+              (
+                let $row2 := fn:tokenize($pos2, "[A-Za-z]+") [2]
+                return
+                (
+                  element { fn:QName($NS, "col") } { $col },
+                  element { fn:QName($NS, "row1") } { xs:integer($row) + 1 },
+                  element { fn:QName($NS, "row2") } { $row2 }
+                )
+              )
+            
+            let $lblCol := $col
+            let $val    := local:getValue($row, $col, $sheet, $table, $rels, $wkBook, $sharedStrings)
+            let $label  := local:findLabel($row, $col, $sheet, $table, $rels, $wkBook, $sharedStrings)
+              return
+                element { fn:QName($NS, "definedName") }
+                {
+                  element { fn:QName($NS, "expand") }  { $expand },
+                  element { fn:QName($NS, "dname") }  { $att },
+                  element { fn:QName($NS, "dlabel") } { $label },
+                  element { fn:QName($NS, "sheet") }  { $sheet },
+                  element { fn:QName($NS, "col") }    { $col },
+                  element { fn:QName($NS, "row") }    { $row },
+                  element { fn:QName($NS, "pos") }    { $pos1 },
+                  element { fn:QName($NS, "dvalue") } { $val }
+                }
+        }
+
+  let $dnExpansionDoc :=
+    element { fn:QName($NS, "definedNames") }
+    {
+      for $dn in $defNamePass1Doc/tax:definedName
+        for $newRow in (xs:integer($dn/tax:expand/tax:row1/text()) to xs:integer($dn/tax:expand/tax:row2/text()))
+          let $newPos    := $dn/tax:col/text()||$newRow
+          let $sheetName := $dn/tax:sheet/text()
+          let $col       := $dn/tax:col/text()
+          let $dname     := $dn/tax:dname/text()
+          let $newLabel  := local:findLabel(xs:string($newRow), $col, $sheetName, $table, $rels, $wkBook, $sharedStrings)
+          let $newValue  := local:getValue(xs:string($newRow), $col, $sheetName, $table, $rels, $wkBook, $sharedStrings)
+            return
+            (
+              element { fn:QName($NS, "definedName") }
+              {
+                element { fn:QName($NS, "dname") }  { $dname },
+                element { fn:QName($NS, "dlabel") } { $newLabel },
+                element { fn:QName($NS, "sheet") }  { $sheetName },
+                element { fn:QName($NS, "col") }    { $col },
+                element { fn:QName($NS, "row") }    { $newRow },
+                element { fn:QName($NS, "pos") }    { $newPos },
+                element { fn:QName($NS, "dvalue") } { $newValue }
+              }
+            )
+    }
+  
+  let $unSortedDoc :=
+      element { fn:QName($NS, "definedNames") }
+      {
+        $dnExpansionDoc/node(),
+        for $d in $defNamePass1Doc/tax:definedName
+          return
+            element { fn:QName($NS, "definedName") }
+            {
+                element { fn:QName($NS, "dname") }  { $d/tax:dname/text() },
+                element { fn:QName($NS, "dlabel") } { $d/tax:dlabel/text() },
+                element { fn:QName($NS, "sheet") }  { $d/tax:sheet/text() },
+                element { fn:QName($NS, "col") }    { $d/tax:col/text() },
+                element { fn:QName($NS, "row") }    { $d/tax:row/text() },
+                element { fn:QName($NS, "pos") }    { $d/tax:pos/text() },
+                element { fn:QName($NS, "dvalue") } { $d/tax:dvalue/text() }
+            }
+      }
+  
+  let $newDefNameDoc :=
+      element { fn:QName($NS, "definedNames") }
+      {
+        for $i in $unSortedDoc/tax:definedName
+          let $row   := xs:integer($i/tax:row/text())
+          let $seq   :=
+            if ($row lt 10) then
+              $i/tax:col/text()||"0"||$i/tax:row/text()
+            else
+              $i/tax:pos/text()
+          let $dname := $i/tax:dname/text()
+          order by $seq, $dname
+            return $i
+      }
+
   let $doc :=
     element { fn:QName($NS, "workbook") }
     {
@@ -222,30 +313,7 @@ declare function local:extractSpreadsheetData($user as xs:string, $zipFile as xs
       },
       element { fn:QName($NS, "feed") }
       {
-        element { fn:QName($NS, "definedNames") }
-        {
-          for $dn in $defnames
-            let $att    := xs:string($dn/@name)
-            let $sheet  := fn:tokenize($dn/text(), "!") [1]
-            let $cell   := fn:tokenize($dn/text(), "!") [2]
-            let $pos    := fn:replace($cell, "\$", "")
-            let $col    := fn:tokenize($pos, "[0-9]") [1]
-            let $row    := fn:tokenize($pos, "[A-Za-z]+") [2]
-            let $lblCol := $col
-            let $val    := local:getValue($row, $col, $sheet, $table, $rels, $wkBook, $sharedStrings)
-            let $label  := local:findLabel($row, $col, $sheet, $table, $rels, $wkBook, $sharedStrings)
-              return
-                element { fn:QName($NS, "definedName") }
-                {
-                  element { fn:QName($NS, "dname") }  { $att },
-                  element { fn:QName($NS, "dlabel") } { $label },
-                  element { fn:QName($NS, "sheet") }  { $sheet },
-                  element { fn:QName($NS, "col") }    { $col },
-                  element { fn:QName($NS, "row") }    { $row },
-                  element { fn:QName($NS, "pos") }    { $pos },
-                  element { fn:QName($NS, "dvalue") } { $val }
-                }
-        },
+        $newDefNameDoc,
         $workSheets
       }
     }
@@ -253,25 +321,30 @@ declare function local:extractSpreadsheetData($user as xs:string, $zipFile as xs
   return $doc
 };
 
-let $userDir := "/tmp/users/sandraday/"
+let $userDir := "/tmp/users/garyrusso/"
 let $user    := fn:tokenize($userDir, "/")[fn:last()-1]
 
 let $zipFileList := local:loadDirectory($userDir)
 
 let $docs :=
-  for $zipFile in $zipFileList[1 to 1]
+  for $zipFile in $zipFileList
     let $doc     := local:extractSpreadsheetData($user, $zipFile)
     let $dir     := "/user/"||$user||"/"
     let $uri     := $dir||xdmp:hash64($doc)||".xml"
     let $fileUri := local:generateFileUri($user, $zipFile)
     let $binDoc  := xdmp:document-get($zipFile)
-      return
-      (
-        $uri, $fileUri, $doc
-      (:
-        xdmp:document-insert($uri, $doc, xdmp:default-permissions(), ("spreadsheet")),
-        xdmp:document-insert($fileUri, $binDoc, xdmp:default-permissions(), ("binary"))
-      :)
-      )
+      order by $zipFile
+        return
+        (
+        (:
+          $uri, $fileUri,
+          fn:count($doc/tax:feed/tax:definedNames/tax:definedName),
+          $doc
+          xdmp:document-insert($uri, $doc, xdmp:default-permissions(), ("spreadsheet")),
+          xdmp:document-insert($fileUri, $binDoc, xdmp:default-permissions(), ("binary"))
+        :)
+          xdmp:document-insert($uri, $doc, xdmp:default-permissions(), ("spreadsheet")),
+          xdmp:document-insert($fileUri, $binDoc, xdmp:default-permissions(), ("binary"))
+        )
 
 return $docs
