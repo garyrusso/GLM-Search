@@ -120,6 +120,20 @@ declare variable $c:REST-SEARCH-OPTIONS :=
         <facet-option>limit=10</facet-option>
       </range>
     </constraint>
+    <constraint name="users">
+      <range type="xs:string">
+        <element ns="http://tax.thomsonreuters.com" name="user"/>
+        <facet-option>descending</facet-option>
+        <facet-option>limit=10</facet-option>
+      </range>
+    </constraint>
+    <constraint name="dnames">
+      <range type="xs:string">
+        <element ns="http://tax.thomsonreuters.com" name="dname"/>
+        <facet-option>descending</facet-option>
+        <facet-option>limit=10</facet-option>
+      </range>
+    </constraint>
     <constraint name="id">
       <word>
         <element ns="http://tax.thomsonreuters.com" name="id"/>
@@ -148,6 +162,21 @@ declare variable $c:REST-SEARCH-OPTIONS :=
     <constraint name="type">
       <word>
         <element ns="http://tax.thomsonreuters.com" name="type"/>
+      </word>
+    </constraint>
+    <constraint name="user">
+      <word>
+        <element ns="http://tax.thomsonreuters.com" name="user"/>
+      </word>
+    </constraint>
+    <constraint name="dname">
+      <word>
+        <element ns="http://tax.thomsonreuters.com" name="dname"/>
+      </word>
+    </constraint>
+    <constraint name="dvalue">
+      <word>
+        <element ns="http://tax.thomsonreuters.com" name="dvalue"/>
       </word>
     </constraint>
     <transform-results ns="http://marklogic.com/roxy/lib/origin-lib" apply="rest-origin-snippet" at="/app/lib/origin-lib.xqy">
@@ -216,6 +245,20 @@ declare variable $c:SEARCH-OPTIONS :=
         <facet-option>limit=10</facet-option>
       </range>
     </constraint>
+    <constraint name="users">
+      <range type="xs:string">
+        <element ns="http://tax.thomsonreuters.com" name="user"/>
+        <facet-option>descending</facet-option>
+        <facet-option>limit=10</facet-option>
+      </range>
+    </constraint>
+    <constraint name="dnames">
+      <range type="xs:string">
+        <element ns="http://tax.thomsonreuters.com" name="dname"/>
+        <facet-option>descending</facet-option>
+        <facet-option>limit=10</facet-option>
+      </range>
+    </constraint>
     <constraint name="id">
       <word>
         <element ns="http://tax.thomsonreuters.com" name="id"/>
@@ -246,6 +289,21 @@ declare variable $c:SEARCH-OPTIONS :=
         <element ns="http://tax.thomsonreuters.com" name="type"/>
       </word>
     </constraint>
+    <constraint name="user">
+      <word>
+        <element ns="http://tax.thomsonreuters.com" name="user"/>
+      </word>
+    </constraint>
+    <constraint name="dname">
+      <word>
+        <element ns="http://tax.thomsonreuters.com" name="dname"/>
+      </word>
+    </constraint>
+    <constraint name="dvalue">
+      <word>
+        <element ns="http://tax.thomsonreuters.com" name="dvalue"/>
+      </word>
+    </constraint>
     <transform-results apply="metadata-snippet">
       <preferred-elements>
         <element ns="http://tax.thomsonreuters.com" name="type"/>
@@ -255,6 +313,8 @@ declare variable $c:SEARCH-OPTIONS :=
         <element ns="http://tax.thomsonreuters.com" name="importedAccountCode"/>
         <element ns="http://tax.thomsonreuters.com" name="beginningBalance"/>
         <element ns="http://tax.thomsonreuters.com" name="endingBalance"/>
+        <element ns="http://tax.thomsonreuters.com" name="user"/>
+        <element ns="http://tax.thomsonreuters.com" name="dname"/>
       </preferred-elements>
     </transform-results>
     <operator name="results">
@@ -268,6 +328,8 @@ declare variable $c:SEARCH-OPTIONS :=
             <element ns="http://tax.thomsonreuters.com" name="importedAccountCode"/>
             <element ns="http://tax.thomsonreuters.com" name="beginningBalance"/>
             <element ns="http://tax.thomsonreuters.com" name="endingBalance"/>
+            <element ns="http://tax.thomsonreuters.com" name="user"/>
+            <element ns="http://tax.thomsonreuters.com" name="dname"/>
           </preferred-elements>
           <per-match-tokens>30</per-match-tokens>
           <max-matches>4</max-matches>
@@ -284,6 +346,8 @@ declare variable $c:SEARCH-OPTIONS :=
             <element ns="http://tax.thomsonreuters.com" name="importedAccountCode"/>
             <element ns="http://tax.thomsonreuters.com" name="beginningBalance"/>
             <element ns="http://tax.thomsonreuters.com" name="endingBalance"/>
+            <element ns="http://tax.thomsonreuters.com" name="user"/>
+            <element ns="http://tax.thomsonreuters.com" name="dname"/>
           </preferred-elements>
           <per-match-tokens>30</per-match-tokens>
           <max-matches>4</max-matches>
