@@ -1,19 +1,310 @@
-# GLM Demo
-## Purpose
-This app is to show how to do the following:
+<!DOCTYPE html>
+<html>
+<head>
+<title>README</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<style type="text/css">
+/* GitHub stylesheet for MarkdownPad (http://markdownpad.com) */
+/* Author: Nicolas Hery - http://nicolashery.com */
+/* Version: b13fe65ca28d2e568c6ed5d7f06581183df8f2ff */
+/* Source: https://github.com/nicolahery/markdownpad-github */
 
-1. Extend the REST API
-1. Configure and test leading wildcard searches
-1. Best Approaches for Schema-agnostic data
-1. Multi-Statement ACID Transactions
-1. Best Approaches for storing and retrieving spreadsheet data.
-1. Bi-Temporal Data Structure and Query used for Point-In-Time Audits
-1. Triplestore Document Linking
-1. Triplestore Queries for Forward and Backward Chain Inferencing
+/* RESET
+=============================================================================*/
 
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
 
-# RESTful APIs
+/* BODY
+=============================================================================*/
 
+body {
+  font-family: Helvetica, arial, freesans, clean, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
+  background-color: #fff;
+  padding: 20px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+body>*:first-child {
+  margin-top: 0 !important;
+}
+
+body>*:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* BLOCKS
+=============================================================================*/
+
+p, blockquote, ul, ol, dl, table, pre {
+  margin: 15px 0;
+}
+
+/* HEADERS
+=============================================================================*/
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 20px 0 10px;
+  padding: 0;
+  font-weight: bold;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 tt, h1 code, h2 tt, h2 code, h3 tt, h3 code, h4 tt, h4 code, h5 tt, h5 code, h6 tt, h6 code {
+  font-size: inherit;
+}
+
+h1 {
+  font-size: 28px;
+  color: #000;
+}
+
+h2 {
+  font-size: 24px;
+  border-bottom: 1px solid #ccc;
+  color: #000;
+}
+
+h3 {
+  font-size: 18px;
+}
+
+h4 {
+  font-size: 16px;
+}
+
+h5 {
+  font-size: 14px;
+}
+
+h6 {
+  color: #777;
+  font-size: 14px;
+}
+
+body>h2:first-child, body>h1:first-child, body>h1:first-child+h2, body>h3:first-child, body>h4:first-child, body>h5:first-child, body>h6:first-child {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+a:first-child h1, a:first-child h2, a:first-child h3, a:first-child h4, a:first-child h5, a:first-child h6 {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+h1+p, h2+p, h3+p, h4+p, h5+p, h6+p {
+  margin-top: 10px;
+}
+
+/* LINKS
+=============================================================================*/
+
+a {
+  color: #4183C4;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* LISTS
+=============================================================================*/
+
+ul, ol {
+  padding-left: 30px;
+}
+
+ul li > :first-child, 
+ol li > :first-child, 
+ul li ul:first-of-type, 
+ol li ol:first-of-type, 
+ul li ol:first-of-type, 
+ol li ul:first-of-type {
+  margin-top: 0px;
+}
+
+ul ul, ul ol, ol ol, ol ul {
+  margin-bottom: 0;
+}
+
+dl {
+  padding: 0;
+}
+
+dl dt {
+  font-size: 14px;
+  font-weight: bold;
+  font-style: italic;
+  padding: 0;
+  margin: 15px 0 5px;
+}
+
+dl dt:first-child {
+  padding: 0;
+}
+
+dl dt>:first-child {
+  margin-top: 0px;
+}
+
+dl dt>:last-child {
+  margin-bottom: 0px;
+}
+
+dl dd {
+  margin: 0 0 15px;
+  padding: 0 15px;
+}
+
+dl dd>:first-child {
+  margin-top: 0px;
+}
+
+dl dd>:last-child {
+  margin-bottom: 0px;
+}
+
+/* CODE
+=============================================================================*/
+
+pre, code, tt {
+  font-size: 12px;
+  font-family: Consolas, "Liberation Mono", Courier, monospace;
+}
+
+code, tt {
+  margin: 0 0px;
+  padding: 0px 0px;
+  white-space: nowrap;
+  border: 1px solid #eaeaea;
+  background-color: #f8f8f8;
+  border-radius: 3px;
+}
+
+pre>code {
+  margin: 0;
+  padding: 0;
+  white-space: pre;
+  border: none;
+  background: transparent;
+}
+
+pre {
+  background-color: #f8f8f8;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  line-height: 19px;
+  overflow: auto;
+  padding: 6px 10px;
+  border-radius: 3px;
+}
+
+pre code, pre tt {
+  background-color: transparent;
+  border: none;
+}
+
+kbd {
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    background-color: #DDDDDD;
+    background-image: linear-gradient(#F1F1F1, #DDDDDD);
+    background-repeat: repeat-x;
+    border-color: #DDDDDD #CCCCCC #CCCCCC #DDDDDD;
+    border-image: none;
+    border-radius: 2px 2px 2px 2px;
+    border-style: solid;
+    border-width: 1px;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    line-height: 10px;
+    padding: 1px 4px;
+}
+
+/* QUOTES
+=============================================================================*/
+
+blockquote {
+  border-left: 4px solid #DDD;
+  padding: 0 15px;
+  color: #777;
+}
+
+blockquote>:first-child {
+  margin-top: 0px;
+}
+
+blockquote>:last-child {
+  margin-bottom: 0px;
+}
+
+/* HORIZONTAL RULES
+=============================================================================*/
+
+hr {
+  clear: both;
+  margin: 15px 0;
+  height: 0px;
+  overflow: hidden;
+  border: none;
+  background: transparent;
+  border-bottom: 4px solid #ddd;
+  padding: 0;
+}
+
+/* TABLES
+=============================================================================*/
+
+table th {
+  font-weight: bold;
+}
+
+table th, table td {
+  border: 1px solid #ccc;
+  padding: 6px 13px;
+}
+
+table tr {
+  border-top: 1px solid #ccc;
+  background-color: #fff;
+}
+
+table tr:nth-child(2n) {
+  background-color: #f8f8f8;
+}
+
+/* IMAGES
+=============================================================================*/
+
+img {
+  max-width: 100%
+}
+</style>
+</head>
+<body>
+<h1>GLM Demo</h1>
+<h2>Purpose</h2>
+<p>This app is to show how to do the following:</p>
+<ol>
+<li>Extend the REST API</li>
+<li>Configure and test leading wildcard searches</li>
+<li>Best Approaches for Schema-agnostic data</li>
+<li>Multi-Statement ACID Transactions</li>
+<li>Best Approaches for storing and retrieving spreadsheet data.</li>
+<li>Bi-Temporal Data Structure and Query used for Point-In-Time Audits</li>
+<li>Triplestore Document Linking</li>
+<li>Triplestore Queries for Forward and Backward Chain Inferencing</li>
+</ol>
+<h1>RESTful APIs</h1>
 <table>
     <tr>
         <td colspan="4" style="font-size:x-large;color:green"><b>Request Mappings</b></td>
@@ -320,15 +611,13 @@ This app is to show how to do the following:
         <td valign="top" style ="font-family:'Courier New'">tbd</td>
     </tr>
 </table>
-
-
-## Deploy
-* $ ml local bootstrap
-* $ ml local modules
-* $ ml local deploy content
-
-Content deploy copies zip file to database. Need to run the following snippet in qconsole to inflate data.
-
+<h2>Deploy</h2>
+<ul>
+<li>$ ml local bootstrap</li>
+<li>$ ml local modules</li>
+<li>$ ml local deploy content</li>
+</ul>
+<p>Content deploy copies zip file to database. Need to run the following snippet in qconsole to inflate data.</p>
 <pre>
 
 declare namespace zip="xdmp:zip";
@@ -351,146 +640,128 @@ let $_ := xdmp:document-delete("/files.zip")
 return "done"
 
 </pre>
-
-
-# Roxy
-
-## Table of Contents
- - [Overview](#overview)
- - [Features](#features)
- - [Getting Help](#getting-help)
- - [Requirements](#requirement)
- - [Quick Start](#quick-start)
-
-## Overview
-Roxy is a utility for configuring and deploying MarkLogic applications. Using
+<h1>Roxy</h1>
+<h2>Table of Contents</h2>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#features">Features</a></li>
+<li><a href="#getting-help">Getting Help</a></li>
+<li><a href="#requirement">Requirements</a></li>
+<li><a href="#quick-start">Quick Start</a></li>
+</ul>
+<h2>Overview</h2>
+<p>Roxy is a utility for configuring and deploying MarkLogic applications. Using
 Roxy you can define your app servers, databases, forests, groups, tasks, etc
 in local configuration files. Roxy can then remotely create, update, and remove
-those settings from the command line.
-
-## Features
-
-### Cross Platform
-Roxy runs on any platform that runs Ruby. We currently test on Mac, Linux, and Windows.
-
-### Multiple Environments
-Roxy supports multiple deployment environments. You can define your own or
+those settings from the command line.</p>
+<h2>Features</h2>
+<h3>Cross Platform</h3>
+<p>Roxy runs on any platform that runs Ruby. We currently test on Mac, Linux, and Windows.</p>
+<h3>Multiple Environments</h3>
+<p>Roxy supports multiple deployment environments. You can define your own or
 use the default environments: local, dev, and prod. Each environment can have
-different settings which are specified in properties files or xml config files.
-
-### Easily Create and Deploy REST Extensions
-Roxy provides scaffolding for creating REST extensions, transforms, etc. Once
+different settings which are specified in properties files or xml config files.</p>
+<h3>Easily Create and Deploy REST Extensions</h3>
+<p>Roxy provides scaffolding for creating REST extensions, transforms, etc. Once
 you have writtern your REST extension Roxy makes deploying to the server
-a breeze.
-
-### Capture Existing MarkLogic Settings
-Whether it's a legacy application or you just prefer to configure
+a breeze.</p>
+<h3>Capture Existing MarkLogic Settings</h3>
+<p>Whether it's a legacy application or you just prefer to configure
 your application using the Admin UI, Roxy can capture existing MarkLogic settings
 so that you can use them in your application. This feature is great for backing up
 Legacy Servers. Once the configurations are in Roxy you can then deploy to
-other servers.
+other servers.</p>
+<h3>Backwards Compatible</h3>
+<p>Roxy works with all supported versions of MarkLogic server out of the box.</p>
+<h3>Customization</h3>
+<p>Roxy is written in Ruby. Simply by editing the app_specific.rb file you can
+enhance, override, or replace the default functionality.</p>
+<h3>Run as a Java Jar</h3>
+<p>If you work in an environment where installing <a href="http://ruby-lang.org">Ruby</a> is not an option you
+can <a href="https://github.com/marklogic/roxy/wiki/Run-Roxy-as-a-Jar">run Roxy as a self contained jar</a> file which embeds <a href="http://jruby.org">JRuby</a>.</p>
+<h2>Getting Help</h2>
+<p>To get help with Roxy,</p>
+<ul>
+<li>Subscribe to the <a href="http://developer.marklogic.com/mailman/listinfo/roxy">Roxy mailing list</a></li>
+<li>Read up on <a href="https://github.com/marklogic/roxy/wiki">the wiki</a></li>
+<li>Check out the <a href="https://github.com/marklogic/roxy/wiki/Tutorials">Tutorials page</a></li>
+<li>For Command line usage run:<br />
+  <code>$ ml -h</code></li>
+</ul>
+<h2>Requirements</h2>
+<ul>
+<li>A supported version of <a href="https://github.com/marklogic/roxy/wiki/Supported-MarkLogic-versions">MarkLogic</a></li>
+<li><a href="http://www.ruby-lang.org/en/">Ruby 1.9.3</a> or greater</li>
+<li><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java (jdk)</a>
+  Only if you wish to run the <a href="http://developer.marklogic.com/products/mlcp">mlcp</a>, [XQSync](http://developer.marklogic.com/code/xqsync, XQSync), or <a href="http://developer.marklogic.com/code/recordloader">RecordLoader</a> commands.</li>
+<li><a href="http://git-scm.com/downloads">Git</a> - Required to create a new project using &quot;ml new&quot;.</li>
+</ul>
+<h2>Quick Start</h2>
+<p>This section describes the quickest way to get started using Roxy.</p>
+<h3>Assumptions</h3>
+<ul>
+<li>You already have one or more MarkLogic Servers running somewhere that you can access from your computer. If not, get it <a href="http://developer.marklogic.com/products">here</a>.*</li>
+<li>You know the admin logon to your MarkLogic Server(s)</li>
+</ul>
+<h3>Get Roxy</h3>
+<p>Use one of these three options to get started. </p>
+<h4>Using git</h4>
+<p>You can download Roxy using git
+<code>$ git clone git://github.com/marklogic/roxy.git</code></p>
+<h4>Grab an zipped version</h4>
+<p>If you prefer to grab the archive simply download the latest release from our <a href="https://github.com/marklogic/roxy/releases">Releases Page</a></p>
+<h4>Install the Shell script or Batch File</h4>
+<p>Roxy comes with a script that you can put in your path. This file will create new projects for you by
+by issuing the <code>$ ml new</code> command. Grab one of these files and put it in a folder in your PATH.
+<em><strong>Note:</strong> In order for <code>$ ml new</code> to work you need to have git installed.</em></p>
+<h5>Windows</h5>
+<p>Download the <a href="https://github.com/marklogic/roxy/raw/master/ml.bat">ml.bat</a> file</p>
+<h5>Mac/Linux</h5>
+<p>Download the <a href="https://github.com/marklogic/roxy/raw/master/ml">ml</a> file</p>
+<h3>Configure your application</h3>
+<ol>
+<li>Open a command prompt in the root folder of Roxy.</li>
+<li>Run ml init to create sample configuration files.<br />
+  <em>You must specify the --server-version option with a value of 4, 5, 6 or 7</em>.<br />
+  <em>You must specify the --app-type with a value or rest, hybrid, or mvc</em>.</li>
+</ol>
+<p><code>$ ml init app-name --server-version=7 --app-type=rest</code>
+3. Modify deploy/build.properties with your application's settings.</p>
+<p>```</p>
+<h1>Username to authenticate to ML</h1>
+<p>user=your-ml-admin-username</p>
+<h1>password for ML authentication</h1>
+<h1></h1>
+<h1>leave this blank to be prompted for your password</h1>
+<h1></h1>
+<p>password=</p>
+<h1>the authentication type for the appserver (digest|basic|application-level)</h1>
+<p>authentication-method=application-level</p>
+<h1>the default user to authenticate with. defaults to nobody</h1>
+<p>default-user=${app-name}-user</p>
+<h1>Specify the server(s) you wish to deploy to here. This tutorial assumes you are using localhost.</h1>
+<p>local-server=localhost</p>
+<h1>dev-server=</h1>
+<h1>prod-server=</h1>
+<p>```</p>
+<h3>Configure MarkLogic Server</h3>
+<p><em>This step is only needed when database configurations have changed or on a fresh install. In most cases you will not need to restart your server.</em></p>
+<ol>
+<li>Open a command prompt in the root folder of Roxy.<br />
+  <em>If your server is not configured as local-server in build.properties then substitute your environment here <strong>( local | dev | prod )</strong></em></li>
+<li><code>$ ml local bootstrap</code></li>
+<li>Depending on what changed you may need to restart MarkLogic in order to proceed. If you see output telling you to restart...<br />
+  <code>$ ml local restart</code></li>
+</ol>
+<h3>Deploying Code</h3>
+<p><em>This step describes how to deploy your Roxy application into your MarkLogic Server modules database. If you have elected to run your code locally out of the filesystem you do not need to do this.</em></p>
+<ol>
+<li>Open a command prompt in the root folder of Roxy</li>
+<li><code>$ ml local deploy modules</code></li>
+</ol>
+<h3>Congratulations</h3>
+<p><strong>Congratulations!</strong> You have Roxy running on your server. Now you need to start customizing it.</p>
 
-### Backwards Compatible
-Roxy works with all supported versions of MarkLogic server out of the box.
-
-### Customization
-Roxy is written in Ruby. Simply by editing the app_specific.rb file you can
-enhance, override, or replace the default functionality.
-
-### Run as a Java Jar
-If you work in an environment where installing [Ruby](http://ruby-lang.org) is not an option you
-can [run Roxy as a self contained jar](https://github.com/marklogic/roxy/wiki/Run-Roxy-as-a-Jar) file which embeds [JRuby](http://jruby.org).
-
-## Getting Help
-To get help with Roxy,
-
-* Subscribe to the [Roxy mailing list](http://developer.marklogic.com/mailman/listinfo/roxy)
-* Read up on [the wiki](https://github.com/marklogic/roxy/wiki)
-* Check out the [Tutorials page](https://github.com/marklogic/roxy/wiki/Tutorials)
-* For Command line usage run:  
-  `$ ml -h`
-
-
-## Requirements
-* A supported version of [MarkLogic](https://github.com/marklogic/roxy/wiki/Supported-MarkLogic-versions)
-* [Ruby 1.9.3](http://www.ruby-lang.org/en/) or greater
-* [Java (jdk)](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
-  Only if you wish to run the [mlcp](http://developer.marklogic.com/products/mlcp), [XQSync](http://developer.marklogic.com/code/xqsync, XQSync), or [RecordLoader](http://developer.marklogic.com/code/recordloader) commands.
-* [Git](http://git-scm.com/downloads) - Required to create a new project using "ml new".
-
-## Quick Start
-This section describes the quickest way to get started using Roxy.
-
-### Assumptions
-* You already have one or more MarkLogic Servers running somewhere that you can access from your computer. If not, get it [here](http://developer.marklogic.com/products).*
-* You know the admin logon to your MarkLogic Server(s)
-
-### Get Roxy
-Use one of these three options to get started. 
-
-#### Using git
-You can download Roxy using git
-`$ git clone git://github.com/marklogic/roxy.git`
-
-#### Grab an zipped version
-If you prefer to grab the archive simply download the latest release from our [Releases Page](https://github.com/marklogic/roxy/releases)
-
-#### Install the Shell script or Batch File
-Roxy comes with a script that you can put in your path. This file will create new projects for you by
-by issuing the `$ ml new` command. Grab one of these files and put it in a folder in your PATH.
-*__Note:__ In order for `$ ml new` to work you need to have git installed.*
-
-##### Windows
-Download the [ml.bat](https://github.com/marklogic/roxy/raw/master/ml.bat) file
-
-##### Mac/Linux
-Download the [ml](https://github.com/marklogic/roxy/raw/master/ml) file
-
-### Configure your application
-1. Open a command prompt in the root folder of Roxy.
-2. Run ml init to create sample configuration files.  
-  *You must specify the --server-version option with a value of 4, 5, 6 or 7*.  
-  *You must specify the --app-type with a value or rest, hybrid, or mvc*.
-
-  `$ ml init app-name --server-version=7 --app-type=rest`
-3. Modify deploy/build.properties with your application's settings.
-
-```
-# Username to authenticate to ML
-user=your-ml-admin-username
-
-# password for ML authentication
-#
-# leave this blank to be prompted for your password
-#
-password=
-
-# the authentication type for the appserver (digest|basic|application-level)
-authentication-method=application-level
-
-# the default user to authenticate with. defaults to nobody
-default-user=${app-name}-user
-
-# Specify the server(s) you wish to deploy to here. This tutorial assumes you are using localhost.
-local-server=localhost
-#dev-server=
-#prod-server=
-```
-
-### Configure MarkLogic Server
-*This step is only needed when database configurations have changed or on a fresh install. In most cases you will not need to restart your server.*
-
-1. Open a command prompt in the root folder of Roxy.  
-  *If your server is not configured as local-server in build.properties then substitute your environment here __( local | dev | prod )__*
-2. `$ ml local bootstrap`
-3. Depending on what changed you may need to restart MarkLogic in order to proceed. If you see output telling you to restart...  
-  `$ ml local restart`
-
-### Deploying Code
-*This step describes how to deploy your Roxy application into your MarkLogic Server modules database. If you have elected to run your code locally out of the filesystem you do not need to do this.*
-
-1. Open a command prompt in the root folder of Roxy
-2. `$ ml local deploy modules`
-
-### Congratulations
-**Congratulations!** You have Roxy running on your server. Now you need to start customizing it.
+</body>
+</html>
+<!-- This document was created with MarkdownPad, the Markdown editor for Windows (http://markdownpad.com) -->
