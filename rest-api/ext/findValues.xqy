@@ -6,7 +6,7 @@ declare namespace roxy = "http://marklogic.com/roxy";
 declare namespace tax = "http://tax.thomsonreuters.com";
 
 declare variable $NL      := "\r?\n";
-declare variable $pathIdx := "/tax:origin/tax:feed/tax:price/*";
+declare variable $pathIdx := "/tax:origin/tax:feed/tax:price//*";
 
 (:
  :)
@@ -19,21 +19,21 @@ declare function tr:getValuesWithinRange($min as xs:decimal, $max as xs:decimal)
           $val
   
   let $valuesDoc :=
-    element { "values" }
+    element { "valueItems" }
     {
       for $value in $values
       
         let $results := cts:search(/tax:origin/tax:feed/tax:price, cts:word-query(xs:string($value)))
         
         return
-          element { "valueSet" }
+          element { "valueItem" }
           {
             (
               element { "value" } { $value },
               element { "count" } { fn:count($results) },
               element { "items" }
               {
-                for $item in $results/*/text()
+                for $item in $results//*/text()
                   let $path  := xdmp:path($item/..)
                     where $item eq $value
                       return
@@ -58,6 +58,7 @@ declare function tr:getValuesWithinRange($min as xs:decimal, $max as xs:decimal)
       },
       element { "elapsedTime" }      { xdmp:elapsed-time() },
       element { "uniqueValueCount" } { fn:count($values) },
+      element { "values" }           { fn:string-join(xs:string($values), " ") },
       $valuesDoc
     }
 
