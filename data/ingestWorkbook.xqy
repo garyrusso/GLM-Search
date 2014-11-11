@@ -167,8 +167,8 @@ declare function local:expansionElement($dn as node(), $row as xs:string, $col a
       element { fn:QName($NS, "definedName") }
       {
         element { fn:QName($NS, "dname") }       { $dname },
-        element { fn:QName($NS, "rowLabel") }    { $rowLabel },
-        element { fn:QName($NS, "columnLabel") } { $columnLabel },
+        element { fn:QName($NS, "rowLabel") }    { if (fn:empty($rowLabel)) then "none" else $rowLabel },
+        element { fn:QName($NS, "columnLabel") } { if (fn:empty($columnLabel)) then "none" else $columnLabel },
         element { fn:QName($NS, "sheet") }       { $sheetName },
         element { fn:QName($NS, "col") }         { $col },
         element { fn:QName($NS, "row") }         { $row },
@@ -252,7 +252,7 @@ declare function local:expandDoc($doc as node(), $table as map:map)
           if (fn:empty($dn/tax:row2/text())) then
           (
             (: No Expansion :)
-            element { fn:QName($NS, "definedName") } { "construction" }
+            local:expansionElement($dn, xs:string($dn/tax:row1/text()), $dn/tax:col1/text(), $table)
           )
           else
           if (($dn/tax:row1/text() ne $dn/tax:row2/text()) and ($dn/tax:col1/text() ne $dn/tax:col2/text())) then
@@ -459,7 +459,7 @@ declare function local:extractSpreadsheetData($user as xs:string, $zipFile as xs
   return $doc
 };
 
-let $userDir := "/tmp/users/gracehopper/"
+let $userDir := "/tmp/users/sandraday/"
 let $user    := fn:tokenize($userDir, "/")[fn:last()-1]
 
 let $zipFileList := local:loadDirectory($userDir)
