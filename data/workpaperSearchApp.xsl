@@ -75,8 +75,12 @@
                         <td width="80%"><xsl:value-of select="_1:dname"/></td>
                       </tr>
                       <tr>
-                        <td width="20%" bgcolor="#E8ECED" valign="top">Defined Label</td>
-                        <td width="80%"><xsl:value-of select="_1:dlabel"/></td>
+                        <td width="20%" bgcolor="#E8ECED" valign="top">Row Label</td>
+                        <td width="80%"><xsl:value-of select="_1:rowLabel"/></td>
+                      </tr>
+                      <tr>
+                        <td width="20%" bgcolor="#E8ECED" valign="top">Column Label</td>
+                        <td width="80%"><xsl:value-of select="_1:columnLabel"/></td>
                       </tr>
                       <tr>
                         <td width="20%" bgcolor="#E8ECED" valign="top">Defined Value</td>

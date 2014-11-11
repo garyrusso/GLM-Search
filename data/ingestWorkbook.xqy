@@ -162,6 +162,8 @@ declare function local:expansionElement($dn as node(), $row as xs:string, $col a
   let $newValue    := local:getValue($row, $col, $sheetName, $table)
   
   let $doc :=
+    if (fn:empty($newValue)) then ()
+    else
       element { fn:QName($NS, "definedName") }
       {
         element { fn:QName($NS, "dname") }       { $dname },
@@ -178,6 +180,64 @@ declare function local:expansionElement($dn as node(), $row as xs:string, $col a
 };
 
 (:~
+ : Column Expansion
+ :
+ : @param $doc
+ :)
+declare function local:columnExpandDoc($dn as node(), $table as map:map)
+{
+  let $col1 := fn:string-to-codepoints($dn/tax:col1/text())
+  let $col2 := fn:string-to-codepoints($dn/tax:col2/text())
+
+  let $doc :=
+    for $col in ($col1 to $col2)
+      let $row := $dn/tax:row1/text()
+      let $newCol := fn:codepoints-to-string($col)
+        return
+          local:expansionElement($dn, xs:string($row), $newCol, $table)
+
+  return $doc
+};
+
+(:~
+ : Row Expansion
+ :
+ : @param $doc
+ :)
+declare function local:rowExpandDoc($dn as node(), $table as map:map)
+{
+  let $doc :=
+    for $row in ((xs:integer($dn/tax:row1/text())) to xs:integer($dn/tax:row2/text()))
+      let $col := $dn/tax:col1/text()
+        return
+          local:expansionElement($dn, xs:string($row), $col, $table)
+                  
+  return $doc
+};
+
+(:~
+ : Column and Row Expansion
+ :
+ : @param $doc
+ :)
+declare function local:columnRowExpandDoc($dn as node(), $table as map:map)
+{
+  let $doc :=
+    for $row in ((xs:integer($dn/tax:row1/text())) to xs:integer($dn/tax:row2/text()))
+    
+      let $col1 := fn:string-to-codepoints($dn/tax:col1/text())
+      let $col2 := fn:string-to-codepoints($dn/tax:col2/text())
+    
+      return
+        for $col in ($col1 to $col2)
+          let $newCol := fn:codepoints-to-string($col)
+            return
+              local:expansionElement($dn, xs:string($row), $newCol, $table)
+
+  return $doc
+};
+
+(:~
  : Column and Row Expansion
  :
  : @param $doc
@@ -189,26 +249,30 @@ declare function local:expandDoc($doc as node(), $table as map:map)
     {
       for $dn in $doc/tax:definedName
         return
+          if (fn:empty($dn/tax:row2/text())) then
+          (
+            (: No Expansion :)
+            element { fn:QName($NS, "definedName") } { "construction" }
+          )
+          else
+          if (($dn/tax:row1/text() ne $dn/tax:row2/text()) and ($dn/tax:col1/text() ne $dn/tax:col2/text())) then
+          (
+            (: Row and Column Expansion :)
+            local:columnRowExpandDoc($dn, $table)
+          )
+          else
           if ($dn/tax:row1/text() eq $dn/tax:row2/text()) then
           (
             (: Column Expansion :)
-            let $col1 := fn:string-to-codepoints($dn/tax:col1/text())
-            let $col2 := fn:string-to-codepoints($dn/tax:col2/text())
-            
-            for $col in ($col1 to $col2)
-              let $row := $dn/tax:row1/text()
-              let $newCol := fn:codepoints-to-string($col)
-                return
-                  local:expansionElement($dn, xs:string($row), $newCol, $table)
+            local:columnExpandDoc($dn, $table)
           )
           else
+          if ($dn/tax:col1/text() eq $dn/tax:col2/text()) then
           (
             (: Row Expansion :)
-            for $row in ((xs:integer($dn/tax:row1/text())) to xs:integer($dn/tax:row2/text()))
-              let $col := $dn/tax:col1/text()
-                return
-                  local:expansionElement($dn, xs:string($row), $col, $table)
+            local:rowExpandDoc($dn, $table)
           )
+          else ()
     }
     
   return $newDoc
@@ -226,9 +290,6 @@ declare function local:extractSpreadsheetData($user as xs:string, $zipFile as xs
   let $exclude :=
   (
     "[Content_Types].xml", "docProps/app.xml", "xl/theme/theme1.xml", "xl/styles.xml", "_rels/.rels",
-    "xl/printerSettings/printerSettings1.bin", "xl/printerSettings/printerSettings2.bin",
-    "xl/printerSettings/printerSettings3.bin", "xl/printerSettings/printerSettings4.bin",
-    "xl/printerSettings/printerSettings5.bin",
     "xl/vbaProject.bin", "xl/media/image1.png"
   )
 
@@ -236,7 +297,7 @@ declare function local:extractSpreadsheetData($user as xs:string, $zipFile as xs
   
   let $docs :=
     for $x in xdmp:zip-manifest($excelFile)//zip:part/text()
-      where (($x = $exclude) eq fn:false())
+      where (($x = $exclude) eq fn:false()) and fn:not(fn:starts-with($x, "xl/printerSettings/printerSettings"))
         return
           map:put($table, $x, xdmp:zip-get($excelFile, $x, $OPTIONS))
 
@@ -344,18 +405,19 @@ declare function local:extractSpreadsheetData($user as xs:string, $zipFile as xs
       {
         $dnExpansionDoc/node(),
         for $d in $defNamePass1Doc/tax:definedName
-          return
-            element { fn:QName($NS, "definedName") }
-            {
-                element { fn:QName($NS, "dname") }       { $d/tax:dname/text() },
-                element { fn:QName($NS, "rowLabel") }    { $d/tax:rowLabel/text() },
-                element { fn:QName($NS, "columnLabel") } { $d/tax:columnLabel/text() },
-                element { fn:QName($NS, "sheet") }       { $d/tax:sheet/text() },
-                element { fn:QName($NS, "col") }         { $d/tax:col/text() },
-                element { fn:QName($NS, "row") }         { $d/tax:row/text() },
-                element { fn:QName($NS, "pos") }         { $d/tax:pos/text() },
-                element { fn:QName($NS, "dvalue") }      { $d/tax:dvalue/text() }
-            }
+          where fn:not(fn:empty($d/tax:pos/text()))
+            return
+              element { fn:QName($NS, "definedName") }
+              {
+                  element { fn:QName($NS, "dname") }       { $d/tax:dname/text() },
+                  element { fn:QName($NS, "rowLabel") }    { $d/tax:rowLabel/text() },
+                  element { fn:QName($NS, "columnLabel") } { $d/tax:columnLabel/text() },
+                  element { fn:QName($NS, "sheet") }       { $d/tax:sheet/text() },
+                  element { fn:QName($NS, "col") }         { $d/tax:col/text() },
+                  element { fn:QName($NS, "row") }         { $d/tax:row/text() },
+                  element { fn:QName($NS, "pos") }         { $d/tax:pos/text() },
+                  element { fn:QName($NS, "dvalue") }      { $d/tax:dvalue/text() }
+              }
       }
   
   let $newDefNameDoc :=
