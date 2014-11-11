@@ -68,14 +68,14 @@ declare function local:getValue($row as xs:string, $col as xs:string, $sheetName
  :
  : @param $row
  :)
-declare function local:findLabel($row as xs:string, $col as xs:string, $sheetName as xs:string, $table as map:map) as xs:string*
+declare function local:findRowLabel($row as xs:string, $col as xs:string, $sheetName as xs:string, $table as map:map) as xs:string*
 {
-  let $leftLabelVal := local:getLabelValue($row, $col, $sheetName, $table)
+  let $leftLabelVal := local:getRowLabelValue($row, $col, $sheetName, $table)
 
   return $leftLabelVal
 };
 
-declare function local:getLabelValue($row as xs:string, $col as xs:string, $sheetName as xs:string, $table)
+declare function local:getRowLabelValue($row as xs:string, $col as xs:string, $sheetName as xs:string, $table)
 {
   let $pattern  := "[a-zA-Z]"
 
@@ -86,7 +86,7 @@ declare function local:getLabelValue($row as xs:string, $col as xs:string, $shee
         (fn:string-to-codepoints($leftCell) lt 66)) then
       local:getValue($row, $leftCell, $sheetName, $table)
     else
-      local:getLabelValue($row, $leftCell, $sheetName, $table)
+      local:getRowLabelValue($row, $leftCell, $sheetName, $table)
 };
 
 declare function local:getLeftCell($col as xs:string)
@@ -102,6 +102,37 @@ declare function local:getLeftCell($col as xs:string)
       fn:substring($upperCol, 1, fn:string-length($upperCol) - 1)||$decrementChar
 
   return $retVal
+};
+
+(:~
+ : Entry point to a recursive function.
+ :
+ : @param $col
+ :)
+declare function local:findColumnLabel($row as xs:string, $col as xs:string, $sheetName as xs:string, $table as map:map) (: as xs:string* :)
+{
+  let $leftLabelVal := local:getColumnLabelValue(xs:integer($row), $col, $sheetName, $table)
+
+  return $leftLabelVal
+};
+
+declare function local:getColumnLabelValue($row as xs:integer, $col as xs:string, $sheetName as xs:string, $table)
+{
+  let $pattern  := "[a-zA-Z]"
+  
+  let $rows :=
+    for $n in (1 to $row)
+      return
+        ($row + 1) - $n
+
+  let $labels :=
+    for $row in $rows
+      let $label := local:getValue(xs:string($row), $col, $sheetName, $table)
+        where fn:matches($label, $pattern)
+          return
+            $label
+
+  return $labels[1]
 };
 
 (:~
@@ -126,8 +157,8 @@ declare function local:expansionElement($dn as node(), $row as xs:string, $col a
   let $newPos      := $col||$row
   let $sheetName   := $dn/tax:sheet/text()
   let $dname       := $dn/tax:dname/text()
-  let $rowLabel    := local:findLabel($row, $col, $sheetName, $table)
-  let $columnLabel := $rowLabel
+  let $rowLabel    := local:findRowLabel($row, $col, $sheetName, $table)
+  let $columnLabel := local:findColumnLabel($row, $col, $sheetName, $table)
   let $newValue    := local:getValue($row, $col, $sheetName, $table)
   
   let $doc :=
@@ -211,7 +242,11 @@ declare function local:extractSpreadsheetData($user as xs:string, $zipFile as xs
 
   let $wkBook        := map:get($table, "xl/workbook.xml")/ssml:workbook
   
-  let $defnames      := $wkBook/ssml:definedNames/node()
+  let $defnames      :=
+    for $item in $wkBook/ssml:definedNames/node()
+      where fn:not(fn:starts-with($item/text(), "#REF!"))
+        return $item
+    
   let $wkSheetList   := $wkBook/ssml:sheets/ssml:sheet
   let $rels          := map:get($table, "xl/_rels/workbook.xml.rels")/rel:Relationships
   let $sharedStrings := map:get($table, "xl/sharedStrings.xml")/ssml:sst/ssml:si/ssml:t/text()
@@ -278,15 +313,13 @@ declare function local:extractSpreadsheetData($user as xs:string, $zipFile as xs
             let $col1 := fn:tokenize($pos1, "[\d]+")[1]
             let $col2 := fn:tokenize($pos2, "[\d]+")[1]
 
-            (: if ($col1 eq $col2) then row expansion  :)
-            
             let $row1   := fn:tokenize($pos1, "[A-Za-z]+") [2]
             let $row2   := fn:tokenize($pos2, "[A-Za-z]+") [2]
             
             let $lblCol      := $col1
             let $val         := local:getValue($row1, $col1, $sheet, $table)
-            let $rowLabel    := local:findLabel($row1, $col1, $sheet, $table)
-            let $columnLabel := $rowLabel
+            let $rowLabel    := local:findRowLabel($row1, $col1, $sheet, $table)
+            let $columnLabel := local:findColumnLabel($row1, $col1, $sheet, $table)
               return
                 element { fn:QName($NS, "definedName") }
                 {
