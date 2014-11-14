@@ -39,6 +39,46 @@ declare function local:loadDirectory($path as xs:string)
 };
 
 (:~
+ : Generates ISO 8601 Date Format using Excel Date Format as input
+ :
+ : Excel Date Format is an long representing the number of days from 1900-01-01
+ :
+ : @param $days - Example: 41955 results in 2014-11-12
+ :
+ : Returns the ISO 8601 Date Format.
+ :)
+declare function local:getIsoDate($days as xs:string)
+{
+  let $delta     := xs:long($days) div 365
+  let $year      := 1900 + xs:integer($delta)
+  let $tempDay   := $delta - xs:integer($delta)
+  let $dayNumber := fn:round(365 * math:trunc($tempDay, 17))
+  
+  let $monthNum1 := xs:integer(xs:double($dayNumber div 365) * 12)
+  let $monthNum  := if ($monthNum1 eq 0) then 1 else $monthNum1
+  
+  let $month     :=
+      if ($monthNum lt 10) then
+        fn:concat("0", xs:string($monthNum))
+      else
+        xs:string($monthNum)
+
+  (: GPR001 - fix this kludge later - use sql:dateadd() API :)
+  let $day1  := fn:abs(fn:round(((xs:double($dayNumber div 365) * 12) - $monthNum) * 32))
+  let $day2  := if ($day1 ge 29) then 28 else $day1
+  let $day   := if ($day2 eq 0) then 1 else $day2
+
+  let $padDay    :=
+      if ($day lt 10) then
+        fn:concat("0", xs:string($day))
+      else
+        xs:string($day)
+        
+  return
+    xs:date($year||"-"||$month||"-"||$padDay)
+};
+
+(:~
  : Get Value from Defined Name
  :
  : @param $cell
@@ -111,7 +151,10 @@ declare function local:getLeftCell($col as xs:string)
  :)
 declare function local:findColumnLabel($row as xs:string, $col as xs:string, $sheetName as xs:string, $table as map:map) (: as xs:string* :)
 {
-  let $leftLabelVal := local:getColumnLabelValue(xs:integer($row), $col, $sheetName, $table)
+  let $leftLabelVal :=
+    if (fn:string-length($row) = 0) then ""
+    else
+      local:getColumnLabelValue(xs:integer($row), $col, $sheetName, $table)
 
   return $leftLabelVal
 };
@@ -173,7 +216,7 @@ declare function local:expansionElement($dn as node(), $row as xs:string, $col a
         element { fn:QName($NS, "col") }         { $col },
         element { fn:QName($NS, "row") }         { $row },
         element { fn:QName($NS, "pos") }         { $newPos },
-        element { fn:QName($NS, "dvalue") }      { $newValue }
+        element { fn:QName($NS, "dvalue") }      { if ($dname eq "FilingDate") then local:getIsoDate($newValue) else $newValue }
       }
 
   return $doc
@@ -319,6 +362,7 @@ declare function local:extractSpreadsheetData($user as xs:string, $zipFile as xs
         let $wkSheetKey := "xl/"||xs:string($rels/rel:Relationship[@Id=$ws/@wbrel:id/fn:string()]/@Target)
         let $relWkSheet := map:get($table, $wkSheetKey)
         let $dim := $relWkSheet/ssml:worksheet/ssml:dimension/@ref/fn:string()
+        where fn:empty($ws/@state)
           return
             element { fn:QName($NS, "worksheet") }
             {
@@ -362,8 +406,14 @@ declare function local:extractSpreadsheetData($user as xs:string, $zipFile as xs
         {
           for $dn in $defnames
             let $att    := xs:string($dn/@name)
-            let $sheet  := fn:tokenize($dn/text(), "!") [1]
-            let $cell   := fn:tokenize($dn/text(), "!") [2]
+            
+            (: There can be multiple dname items: 'T010'!$A$1:$O$56,'T010'!$A$57:$K$77 :)
+            let $item1  := fn:tokenize($dn/text(), ",") [1]
+            
+            (: Use item1 for now. Add multiple items later :) 
+            let $sheet  := fn:replace(fn:tokenize($item1, "!") [1], "'", "")
+
+            let $cell   := fn:tokenize($item1, "!") [2]
             let $pos    := fn:replace($cell, "\$", "")
             
             let $pos1   := fn:tokenize($pos, ":") [1]
@@ -381,21 +431,22 @@ declare function local:extractSpreadsheetData($user as xs:string, $zipFile as xs
             let $val         := local:getValue($row1, $col1, $sheet, $table)
             let $rowLabel    := local:findRowLabel($row1, $col1, $sheet, $table)
             let $columnLabel := local:findColumnLabel($row1, $col1, $sheet, $table)
-              return
-                element { fn:QName($NS, "definedName") }
-                {
-                  element { fn:QName($NS, "dname") }       { $att },
-                  element { fn:QName($NS, "rowLabel") }    { $rowLabel },
-                  element { fn:QName($NS, "columnLabel") } { $columnLabel },
-                  element { fn:QName($NS, "sheet") }       { $sheet },
-                  element { fn:QName($NS, "col1") }        { $col1 },
-                  element { fn:QName($NS, "row1") }        { $row1 },
-                  element { fn:QName($NS, "pos1") }        { $pos1 },
-                  element { fn:QName($NS, "col2") }        { $col2 },
-                  element { fn:QName($NS, "row2") }        { $row2 },
-                  element { fn:QName($NS, "pos2") }        { $pos2 },
-                  element { fn:QName($NS, "dvalue") }      { $val }
-                }
+              where fn:not(fn:starts-with($att, "_")) and fn:empty($dn/@hidden)
+                return
+                  element { fn:QName($NS, "definedName") }
+                  {
+                    element { fn:QName($NS, "dname") }       { $att },
+                    element { fn:QName($NS, "rowLabel") }    { $rowLabel },
+                    element { fn:QName($NS, "columnLabel") } { $columnLabel },
+                    element { fn:QName($NS, "sheet") }       { $sheet },
+                    element { fn:QName($NS, "col1") }        { $col1 },
+                    element { fn:QName($NS, "row1") }        { $row1 },
+                    element { fn:QName($NS, "pos1") }        { $pos1 },
+                    element { fn:QName($NS, "col2") }        { $col2 },
+                    element { fn:QName($NS, "row2") }        { $row2 },
+                    element { fn:QName($NS, "pos2") }        { $pos2 },
+                    element { fn:QName($NS, "dvalue") }      { $val }
+                  }
         }
 
   let $dnExpansionDoc := local:expandDoc($defNamePass1Doc, $table)
