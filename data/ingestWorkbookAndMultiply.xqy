@@ -2078,7 +2078,7 @@ declare function local:expansionElement($dn as node(), $row as xs:string, $col a
         element { fn:QName($NS, "col") }         { $col },
         element { fn:QName($NS, "row") }         { $row },
         element { fn:QName($NS, "pos") }         { $newPos },
-        element { fn:QName($NS, "dvalue") }      { if ($dname eq "FilingDate") then local:getIsoDate($newValue) else $newValue }
+        element { fn:QName($NS, "dvalue") }      { $newValue }
       }
 
   return $doc
@@ -2378,10 +2378,10 @@ let $userDir := "/tmp/users/template/"
 let $zipFile := local:loadDirectory($userDir) [1]
 
 let $nUsers       := 1
-let $nDocsPerUser := 1
+let $nDocsPerUser := 1000
 
 let $docs :=
-  for $nUser in (1 to $nUsers)
+  for $nUser in (1 to 5)
     for $nDoc in (1 to $nDocsPerUser)
       let $user := "janedoe"||$nUser
       let $userFullName := "Jane Doe "||$nUser
