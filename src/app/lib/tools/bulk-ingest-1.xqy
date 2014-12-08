@@ -8,7 +8,7 @@ let $total      := 1000
 let $maxpage    := fn:ceiling($total div $ps)
 
 return
-  for $userNumber in 1 to 10
+  for $userNumber in 1 to 1000
     for $i in 1 to $maxpage
       return
       (

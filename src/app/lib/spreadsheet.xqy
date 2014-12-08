@@ -830,7 +830,7 @@ declare function ssheet:createSpreadsheetFile($user as xs:string, $filingDate as
         <calcPr calcId="144525"/>
       </workbook>
   
-    let $binFileUri    := "/tmp/users/garyrusso/workpaper1.xlsx"
+    let $binFileUri    := "/tmp/users/template/workpaper1.xlsx"
     let $excelFile1    := xdmp:document-get($binFileUri)
     let $printerBinDoc := xdmp:zip-get($excelFile1, "xl/printerSettings/printerSettings1.bin")
   

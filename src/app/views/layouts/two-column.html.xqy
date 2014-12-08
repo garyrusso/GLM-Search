@@ -42,7 +42,7 @@ declare variable $q as xs:string? := vh:get("q");
   </head>
   <body>
     <div class="home" id="home">
-      <a class="text" href="/" title="Home">GLM Search</a>
+      <a class="text" href="/" title="Home">Workpapers</a>
     </div>
     {
       (: uv:build-user($username, fn:concat("/user/profile?user=", $username), "/user/login", "/user/register", "/user/logout") :)

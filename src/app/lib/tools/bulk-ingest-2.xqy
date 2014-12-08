@@ -1,7 +1,7 @@
 xquery version "1.0-ml";
 
-import module namespace ingest = "http://tax.thomsonreuters.com/utils" at "/app/lib/ingest.xqy";
-import module namespace ssheet = "http://tax.thomsonreuters.com/ssheet" at "/app/lib/spreadsheet.xqy";
+import module namespace ingest = "http://marklogic.com/roxy/lib/ingest" at "/app/lib/ingest.xqy";
+import module namespace ssheet = "http://marklogic.com/roxy/lib/ssheet" at "/app/lib/spreadsheet.xqy";
 
 declare variable $page       as xs:string external;
 declare variable $pagesize   as xs:string external;
@@ -18,10 +18,12 @@ let $end   := $pg * $ps
 let $userDir := "/tmp/users/template/"
 let $zipFile := ingest:loadDirectory($userDir) [1]
 
+let $padUserNum := ingest:padNum($userNum)
+
 let $docs :=
   for $nDoc in ($start to $end)
-    let $user := "janedoe"||$userNum
-    let $userFullName := "Jane Doe "||$userNum
+    let $user := "janedoe"||$padUserNum
+    let $userFullName := "Jane Doe "||$padUserNum
     let $dir     := "/user/"||$user||"/"
     
     let $fileUri := ingest:generateFileUri($user, $zipFile, $nDoc)

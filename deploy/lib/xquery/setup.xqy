@@ -134,7 +134,8 @@ declare variable $common-server-settings :=
     <setting>pre-commit-trigger-depth</setting>
     <setting>pre-commit-trigger-limit</setting>
     <setting>collation</setting>
-    <setting>authentication</setting>
+    <setting min-version="7.0-0" if="fn:not(setup:get-appserver-external-security($server-config))" value="setup:get-appserver-internal-security($server-config)">internal-security</setting>
+    <setting if="fn:not(setup:get-appserver-external-security($server-config))">authentication</setting>
     <setting value="setup:get-appserver-privilege($server-config)">privilege</setting>
     <setting>concurrent-request-limit</setting>
     <setting>log-errors</setting>
@@ -179,7 +180,7 @@ declare variable $http-server-settings :=
     <setting accept-blank="true">url-rewriter</setting>
     <setting min-version="6.0-1">rewrite-resolves-globally</setting>
     <setting>static-expires</setting>
-    <setting value="setup:get-appserver-default-user($server-config)">default-user</setting>
+    <setting if="fn:not(setup:get-appserver-external-security($server-config))" value="setup:get-appserver-default-user($server-config)">default-user</setting>
   </settings>
 ;
 
@@ -295,7 +296,8 @@ declare function setup:get-rollback-config()
     element sec:privileges
     {
       map:get($roll-back, "privileges")
-    }
+    },
+    map:get($roll-back, "external-security")
   }
 };
 
@@ -307,6 +309,7 @@ declare function setup:do-setup($import-config as element(configuration)) as ite
     setup:create-privileges($import-config),
     setup:create-roles($import-config),
     setup:create-users($import-config),
+    setup:create-external-security($import-config),
     setup:create-mimetypes($import-config),
     setup:create-groups($import-config),
     setup:create-forests($import-config),
@@ -324,6 +327,14 @@ declare function setup:do-setup($import-config as element(configuration)) as ite
   }
   catch($ex)
   {
+    if ($ex/error:code = "ADMIN-INVALIDAUTHENTICATION") then
+      fn:concat('&#10;
+        Either your authentication configuration is invalid or you
+        are trying to change from external authentication back to internal authentication. There is a bug
+        in MarkLogic''s Admin API which prevents going from external back to internal.&#10;
+        See http://docs.marklogic.com/guide/security/external-auth#id_63262 for more information on
+        configuring external authentication.&#10;&#10;' )
+    else (),
     xdmp:log($ex),
     setup:do-wipe(setup:get-rollback-config()),
     fn:concat($ex/err:format-string/text(), '&#10;See MarkLogic Server error log for more details.')
@@ -332,6 +343,7 @@ declare function setup:do-setup($import-config as element(configuration)) as ite
 
 declare function setup:do-wipe($import-config as element(configuration)) as item()*
 {
+  let $_ := xdmp:log(("wiping: ", $import-config))
   (: remove scheduled tasks :)
   let $admin-config := admin:get-configuration()
   let $remove-tasks :=
@@ -432,7 +444,7 @@ declare function setup:do-wipe($import-config as element(configuration)) as item
          else ()',
         (xs:QName("amp"), $amp),
         <options xmlns="xdmp:eval">
-          <database>{xdmp:database("Security")}</database>
+          <database>{$default-security}</database>
         </options>)
     }
     catch($ex)
@@ -460,17 +472,31 @@ declare function setup:do-wipe($import-config as element(configuration)) as item
     let $forest-name := $assignment/as:forest-name
     let $db-config := $import-config/db:databases/db:database[db:forests/db:forest-id/@name = $forest-name]
     let $group := setup:get-group($db-config)
-    let $forests-per-host := $db-config/db:forests-per-host
-    let $forest-names :=
+    let $forests-per-host as xs:integer? := $db-config/db:forests-per-host
+    let $forest-names := (
+      $forest-name,
       if (fn:exists($forests-per-host)) then
         let $database-name := setup:get-database-name-from-database-config($db-config)
-        for $host at $position in admin:group-get-host-ids($admin-config, $group)
-        for $j in (1 to $forests-per-host)
+        for $host at $hostnr in admin:group-get-host-ids($admin-config, $group)
+        for $forestnr in (1 to $forests-per-host)
         return
-          fn:string-join(($database-name, fn:format-number(xs:integer($position), "000"), xs:string($j)), "-")
-      else
-        $forest-name
+          fn:string-join(($database-name, fn:format-number(xs:integer($hostnr), "000"), xs:string($forestnr)), "-")
+      else ()
+    )
     let $replica-names := $assignment/as:replica-names/as:replica-name[fn:string-length(fn:string(.)) > 0]
+    let $replica-names := (
+      $replica-names,
+      if (fn:exists($forests-per-host)) then
+        (: generates too many names actually, filtered later :)
+        let $hosts := admin:group-get-host-ids(admin:get-configuration(), xdmp:group())
+        for $host at $hostnr in $hosts
+        for $forestnr in (1 to $forests-per-host)
+        for $replica in $import-config/as:assignments/as:assignment[as:forest-name = $replica-names]
+        let $replica-name as xs:string := ($replica/as:forest-name[fn:string-length(fn:string(.)) > 0], fn:concat($forest-name, '-replica'))[1]
+        return
+          fn:string-join(($replica-name, fn:format-number(xs:integer($hostnr), "000"), xs:string($forestnr)), "-")
+      else ()
+    )
     for $forest-name in $forest-names
     return
       if (admin:forest-exists($admin-config, $forest-name)) then
@@ -481,6 +507,8 @@ declare function setup:do-wipe($import-config as element(configuration)) as item
           where admin:forest-exists($admin-config, $replica-name)
           return
             let $replica-id := admin:forest-get-id($admin-config, $replica-name)
+            (: double check it is really a replica of current forest :)
+            where admin:forest-get-replicas($admin-config, $forest-id) = $replica-id
             return
             (
               xdmp:set($admin-config, admin:forest-remove-replica($admin-config, $forest-id, $replica-id)),
@@ -541,7 +569,7 @@ declare function setup:do-wipe($import-config as element(configuration)) as item
          sec:remove-user($user)',
         (xs:QName("user"), $user),
         <options xmlns="xdmp:eval">
-          <database>{xdmp:database("Security")}</database>
+          <database>{$default-security}</database>
         </options>)
     }
     catch($ex)
@@ -562,7 +590,7 @@ declare function setup:do-wipe($import-config as element(configuration)) as item
          sec:remove-role($role)',
         (xs:QName("role"), $role),
         <options xmlns="xdmp:eval">
-          <database>{xdmp:database("Security")}</database>
+          <database>{$default-security}</database>
         </options>)
     }
     catch($ex)
@@ -585,12 +613,34 @@ declare function setup:do-wipe($import-config as element(configuration)) as item
         (xs:QName("action"), $priv/sec:action,
          xs:QName("kind"), $priv/sec:kind),
         <options xmlns="xdmp:eval">
-          <database>{xdmp:database("Security")}</database>
+          <database>{$default-security}</database>
         </options>)
     }
     catch($ex)
     {
       if ($ex/error:code = "SEC-PRIVDNE") then ()
+      else
+        xdmp:rethrow()
+    },
+
+  (: remove external security :)
+  for $es in $import-config/sec:external-securities/sec:external-security
+  return
+    try
+    {
+      xdmp:eval(
+        'import module namespace sec="http://marklogic.com/xdmp/security" at "/MarkLogic/security.xqy";
+         declare variable $name as xs:string external;
+
+         sec:remove-external-security($name)',
+        (xs:QName("name"), $es/sec:external-security-name),
+        <options xmlns="xdmp:eval">
+          <database>{$default-security}</database>
+        </options>)
+    }
+    catch($ex)
+    {
+      if ($ex/error:code = "SEC-EXTERNALSECURITYDNE") then ()
       else
         xdmp:rethrow()
     },
@@ -710,10 +760,10 @@ declare function setup:create-forests($import-config as element(configuration)) 
 {
   for $db-config in setup:get-databases-from-config($import-config)
   let $database-name := setup:get-database-name-from-database-config($db-config)
-  let $forests-per-host := $db-config/db:forests-per-host
+  let $forests-per-host as xs:integer? := $db-config/db:forests-per-host
   return
     if (fn:exists($forests-per-host)) then
-      setup:create-forests-from-count($db-config, $database-name, $forests-per-host)
+      setup:create-forests-from-count($import-config, $db-config, $database-name, $forests-per-host)
     else
       setup:create-forests-from-config($import-config, $db-config, $database-name)
 };
@@ -722,10 +772,10 @@ declare function setup:validate-forests($import-config as element(configuration)
 {
   for $db-config in setup:get-databases-from-config($import-config)
   let $database-name := setup:get-database-name-from-database-config($db-config)
-  let $forests-per-host := $db-config/db:forests-per-host
+  let $forests-per-host as xs:integer? := $db-config/db:forests-per-host
   return
     if (fn:exists($forests-per-host)) then
-      setup:validate-forests-from-count($db-config, $database-name, $forests-per-host)
+      setup:validate-forests-from-count($import-config, $db-config, $database-name, $forests-per-host)
     else
       setup:validate-forests-from-config($import-config, $db-config, $database-name)
 };
@@ -769,41 +819,79 @@ declare function setup:validate-forests-from-config(
 };
 
 declare function setup:create-forests-from-count(
+  $import-config as element(configuration),
   $db-config as element(db:database),
   $database-name as xs:string,
   $forests-per-host as xs:int) as item()*
 {
   let $group := setup:get-group($db-config)
-  let $data-directory := $db-config/db:forests/db:data-directory
-  for $host at $position in admin:group-get-host-ids(admin:get-configuration(), $group)
-  for $j in (1 to $forests-per-host)
-  let $forest-name := fn:string-join(($database-name, fn:format-number(xs:integer($position), "000"), xs:string($j)), "-")
-  let $replica-names as xs:string* := ()
+  for $forest-config in setup:get-database-forest-configs($import-config, $database-name)
+  for $forest-name as xs:string in $forest-config/as:forest-name[fn:string-length(fn:string(.)) > 0]
+  let $data-directory as xs:string? := ($forest-config/as:data-directory[fn:string-length(fn:string(.)) > 0], $db-config/db:forests/db:data-directory)[1]
+  let $hosts := admin:group-get-host-ids(admin:get-configuration(), $group)
+  for $host at $hostnr in $hosts
+  for $forestnr in (1 to $forests-per-host)
+  let $new-forest-name := fn:string-join(($forest-name, fn:format-number(xs:integer($hostnr), "000"), xs:string($forestnr)), "-")
+  let $replica-names as xs:string* := $forest-config/as:replica-names/as:replica-name[fn:string-length(fn:string(.)) > 0]
+  let $replicas := $import-config/as:assignments/as:assignment[as:forest-name = $replica-names]
   return
     setup:create-forest(
-      $forest-name,
+      $new-forest-name,
       $data-directory,
       $host,
-      $replica-names)
+      setup:reassign-replicas($replicas, $hosts, $hostnr, $forest-name, $forestnr))
+};
+
+declare function setup:reassign-replicas(
+  $replicas as element(as:assignment)*,
+  $hosts as xs:unsignedLong+,
+  $hostnr as xs:integer,
+  $forest-name as xs:string,
+  $forestnr as xs:int) as element(as:assignment)*
+{
+  let $default-replica-host := xdmp:host-name($hosts[$hostnr mod count($hosts) + 1])
+  for $replica in $replicas
+  let $replica-name as xs:string := ($replica/as:forest-name[fn:string-length(fn:string(.)) > 0], fn:concat($forest-name, '-replica'))[1]
+  let $replica-host-name := $replica/as:host-name[fn:string-length(fn:string(.)) > 0]
+  let $replica-host-name :=
+    if ($replica-host-name) then
+      $replica-host-name
+    else
+      $default-replica-host
+  return element { fn:node-name($replica) } {
+      $replica/@*,
+      <as:forest-name>{fn:string-join(($replica-name, fn:format-number(xs:integer($hostnr), "000"), xs:string($forestnr)), "-")}</as:forest-name>,
+      <as:host-name>{$replica-host-name}</as:host-name>,
+      $replica/node() except ($replica/as:forest-name, $replica/as:host-name)
+  }
 };
 
 declare function setup:validate-forests-from-count(
+  $import-config as element(configuration),
   $db-config as element(db:database),
   $database-name as xs:string,
   $forests-per-host as xs:int)
 {
   let $group := setup:get-group($db-config)
-  let $data-directory := $db-config/db:forests/db:data-directory
-  for $host at $position in admin:group-get-host-ids(admin:get-configuration(), $group)
-  for $j in (1 to $forests-per-host)
-  let $forest-name := fn:string-join(($database-name, fn:format-number(xs:integer($position), "000"), xs:string($j)), "-")
-  let $replicas as xs:string* := ()
+  for $forest-config in setup:get-database-forest-configs($import-config, $database-name)
+  for $forest-name as xs:string in $forest-config/as:forest-name[fn:string-length(fn:string(.)) > 0]
+  let $data-directory as xs:string? := ($forest-config/as:data-directory[fn:string-length(fn:string(.)) > 0], $db-config/db:forests/db:data-directory)[1]
+  for $host at $hostnr in admin:group-get-host-ids(admin:get-configuration(), $group)
+  for $forestnr in (1 to $forests-per-host)
+  let $forest-name := fn:string-join(($database-name, fn:format-number(xs:integer($hostnr), "000"), xs:string($forestnr)), "-")
+  let $replica-names as xs:string* := $forest-config/as:replica-names/as:replica-name[fn:string-length(fn:string(.)) > 0]
+  let $replicas := $import-config/as:assignments/as:assignment[as:forest-name = $replica-names]
+  let $replica-names as xs:string* :=
+    for $replica in $replicas
+    let $replica-name as xs:string := ($replica/as:forest-name[fn:string-length(fn:string(.)) > 0], fn:concat($forest-name, '-replica'))[1]
+    return
+      fn:string-join(($replica-name, fn:format-number(xs:integer($hostnr), "000"), xs:string($forestnr)), "-")
   return
     setup:validate-forest(
       $forest-name,
       $data-directory,
       $host,
-      $replicas)
+      $replica-names)
 };
 
 declare function setup:get-database-forest-configs(
@@ -3294,15 +3382,21 @@ declare function setup:configure-server(
         ""
       else
         "[fn:string-length(fn:string(.)) > 0]"
+    let $min-version as xs:string? := $setting/@min-version
+    let $version-ok := fn:empty($min-version) or setup:at-least-version($min-version)
+    let $if :=
+      if ($setting/@if) then
+        xdmp:value($setting/@if)
+      else
+        fn:true()
     let $value :=
-      if ($setting/@value) then
+      if ($setting/@value and $if and $version-ok) then
         xdmp:value($setting/@value)
       else
         fn:data(xdmp:value(fn:concat("$server-config/gr:", $setting, $setting-test)))
-    let $min-version as xs:string? := $setting/@min-version
-    where (fn:exists($value))
+    where ($if and fn:exists($value))
     return
-      if (fn:empty($min-version) or setup:at-least-version($min-version)) then
+      if ($version-ok) then
         xdmp:set($admin-config,
           xdmp:value(fn:concat("admin:appserver-set-", $setting, "($admin-config, $server-id, $value)")))
       else
@@ -3363,6 +3457,46 @@ declare function setup:configure-server(
               $schema)
     else
       $admin-config
+
+  let $admin-config :=
+    let $external-security as xs:string? := $server-config/gr:external-security/@name
+    return
+      if ($external-security) then
+        try {
+          xdmp:eval('
+            import module namespace admin = "http://marklogic.com/xdmp/admin" at "/MarkLogic/admin.xqy";
+
+            declare namespace gr="http://marklogic.com/xdmp/group";
+
+            declare variable $admin-config external;
+            declare variable $server-id external;
+            declare variable $external-security external;
+            declare variable $server-config external;
+
+            admin:appserver-set-external-security(
+              $admin-config,
+              $server-id,
+              $external-security,
+              xs:boolean($server-config/gr:internal-security),
+              fn:string($server-config/gr:authentication))
+          ',
+          (
+            xs:QName("admin-config"), $admin-config,
+            xs:QName("server-id"), $server-id,
+            xs:QName("external-security"), $external-security,
+            xs:QName("server-config"), $server-config
+          ))
+        }
+        catch($ex) {
+          if ($ex/error:code = "XDMP-UNDFUN" and fn:not(setup:at-least-version("7.0-0"))) then
+            fn:error(
+              xs:QName("VERSION_NOT_SUPPORTED"),
+              fn:concat("MarkLogic ", xdmp:version(), " does not support external security. Use 7.0-0 or higher."))
+          else
+            xdmp:rethrow()
+        }
+      else
+        $admin-config
 
   let $module-locations := $server-config/gr:module-locations
   let $admin-config :=
@@ -3739,6 +3873,76 @@ declare function setup:validate-privileges(
       setup:validation-fail(fn:concat("Missing privilege: ", $privilege-name))
 };
 
+declare function setup:create-external-security(
+  $import-config as element(configuration))
+{
+  let $eval-options :=
+    <options xmlns="xdmp:eval">
+      <database>{$default-security}</database>
+    </options>
+  for $es in $import-config/sec:external-securities/sec:external-security
+  return
+    (: if it exists, don't recreate it :)
+    if (setup:get-external-securities($es/sec:external-security-name)/sec:external-security) then ()
+    else
+    (
+      (: Wrapping this in xdmp:eval because it didn't exist until ML7 :)
+      try {
+        xdmp:eval(
+          'import module namespace sec="http://marklogic.com/xdmp/security" at "/MarkLogic/security.xqy";
+           declare variable $es as element(sec:external-security) external;
+
+           sec:create-external-security(
+             $es/sec:external-security-name,
+             $es/sec:description,
+             $es/sec:authentication,
+             $es/sec:cache-timeout,
+             $es/sec:authorization,
+             $es/sec:ldap-server-uri,
+             $es/sec:ldap-base,
+             $es/sec:ldap-attribute,
+             $es/sec:ldap-default-user,
+             $es/sec:ldap-password)',
+          (xs:QName("es"), $es),
+          $eval-options)
+      }
+      catch($ex) {
+        if ($ex/error:code = "XDMP-UNDFUN" and fn:not(setup:at-least-version("7.0-0"))) then
+          fn:error(
+              xs:QName("VERSION_NOT_SUPPORTED"),
+              fn:concat("MarkLogic ", xdmp:version(), " does not support external security. Use 7.0-0 or higher."))
+        else
+          xdmp:rethrow()
+      },
+      setup:add-rollback("external-security", $es)
+    )
+};
+
+declare function setup:validate-external-security(
+  $import-config as element(configuration))
+{
+  for $es in $import-config/sec:external-securities/sec:external-security
+  let $es-name as xs:string? := $es/sec:external-security-name
+  let $match := setup:get-external-securities($es-name)
+  return
+    if ($match) then
+      let $match-elements := $match/*[fn:not(fn:local-name(.) = 'external-security-id')]
+      let $all-match :=
+          for $e in $match-elements
+          let $name := fn:node-name($e)
+          return
+            $es/*[fn:node-name(.) = $name] = $e
+      let $has-mismatch := $all-match = fn:false()
+      let $c1 := fn:count($es/*)
+      let $c2 := fn:count($match-elements)
+      return
+      if ($c1 ne $c2 or $has-mismatch) then
+        setup:validation-fail(fn:concat("Mismatched external-security ", $es-name))
+      else ()
+    else
+      setup:validation-fail(fn:concat("Missing external-security ", $es-name))
+};
+
 declare function setup:create-roles(
   $import-config as element(configuration))
 {
@@ -3898,7 +4102,6 @@ declare function setup:validate-roles(
   let $amps as element(sec:amp)* := $role/sec:amps/*
   let $match := setup:get-roles(())/sec:role[sec:role-name = $role-name]
   return
-    (: if the role exists, then update it :)
     if ($match) then
       if ($match/sec:role-name != $role-name or
           $match/sec:description != $description or
@@ -4267,6 +4470,22 @@ declare function setup:get-appserver-default-user($server-config as element()) a
     else $default-user
 };
 
+declare function setup:get-appserver-internal-security($server-config as element()) as xs:boolean?
+{
+  if (setup:at-least-version("7.0-0")) then
+    (
+      fn:data($server-config/gr:internal-security),
+      fn:not(setup:get-appserver-external-security($server-config)[fn:not(. = "")]),
+      fn:true()
+    )[1]
+  else ()
+};
+
+declare function setup:get-appserver-external-security($server-config as element()) as xs:string?
+{
+  fn:data($server-config/gr:external-security/(@name|text()))
+};
+
 declare function setup:get-ssl-certificate-template(
   $server-config as element())
 as xs:unsignedLong
@@ -4443,6 +4662,27 @@ declare function setup:get-roles($ids as xs:unsignedLong*) as element(sec:roles)
         }
     }</roles>
 };
+
+declare function setup:get-external-securities($names as xs:string*) as element(sec:external-securities)*
+{
+  let $external-securities :=
+    xdmp:eval(
+      'import module namespace sec="http://marklogic.com/xdmp/security" at "/MarkLogic/security.xqy";
+       fn:collection(sec:security-collection())/sec:external-security
+       ',
+      (),
+      <options xmlns="xdmp:eval">
+        <database>{$default-security}</database>
+      </options>)
+  return
+    element sec:external-securities {
+      if ($names) then
+        $external-securities[sec:external-security-name = $names]
+      else
+        $external-securities
+    }
+};
+
 
 declare function setup:get-amps($ids as xs:unsignedLong*) as element(sec:amps)? {
   let $amps :=
@@ -4831,6 +5071,7 @@ declare function setup:validate-install($import-config as element(configuration)
 {
   try
   {
+    setup:validate-external-security($import-config),
     setup:validate-privileges($import-config),
     setup:validate-roles($import-config),
     setup:validate-users($import-config),
