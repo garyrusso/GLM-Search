@@ -91,6 +91,309 @@ declare function ingest:getIsoDate($days as xs:string)
     xs:date($year||"-"||$month||"-"||$padDay)
 };
 
+declare function ingest:getTargetTaxBracket($bracket as xs:decimal) as xs:decimal
+{
+  let $rate :=
+      if ($bracket eq 0.10) then
+        0.10
+      else
+      if ($bracket eq 0.15) then
+        0.10
+      else
+      if ($bracket eq 0.25) then
+        0.15
+      else
+      if ($bracket eq 0.28) then
+        0.25
+      else
+      if ($bracket eq 0.33) then
+        0.28
+      else
+      if ($bracket eq 0.35) then
+        0.33
+      else
+      if ($bracket eq 0.396) then
+        0.35
+      else
+        0.396
+        
+  return $rate
+};
+
+declare function ingest:getTaxBracket($income as xs:decimal) as xs:decimal
+{
+(:
+10 - 9075
+15 - 9076 to 36900
+25 - 36901 to 89350
+28 - 89351 to 186350
+33 - 186351 to 405100
+35 - 405101 to 457600
+39.6 - 457600
+:)
+
+  let $rate :=
+      if ($income lt 9075) then
+        0.10
+      else
+      if ($income ge 9076 and $income lt 36901) then
+        0.15
+      else
+      if ($income ge 36901 and $income lt 89351) then
+        0.25
+      else
+      if ($income ge 89351 and $income lt 186351) then
+        0.28
+      else
+      if ($income ge 186351 and $income lt 405101) then
+        0.33
+      else
+      if ($income ge 405101 and $income lt 457601) then
+        0.35
+      else
+      if ($income ge 457601) then
+        0.396
+      else
+        0.396
+        
+  return $rate
+};
+
+declare function ingest:buildTaxPlanDoc()
+{
+  let $c4  := xdmp:random(100000)
+  let $c5  := xdmp:random(100000)
+  let $c6  := xdmp:random(100000)
+  let $c7  := xdmp:random(100000)
+  let $c8  := xdmp:random(100000)
+  let $c9  := xdmp:random(10000)
+  let $c10 := xdmp:random(10000)
+  
+  let $c11 := $c4 + $c5 + $c6 + $c7 + $c8 + $c9 + $c10 
+
+  let $d4 := xs:integer($c4 div 12)
+  let $d5 := xs:integer($c5 div 12)
+  let $d6 := xs:integer($c6 div 12)
+  let $d7 := xs:integer($c7 div 12)
+  let $d8 := xs:integer($c8 div 12)
+  let $d9 := xs:integer($c9 div 12)
+  let $d10 := xs:integer($c10 div 12)
+  
+  let $d11 := $d4 + $d5 + $d6 + $d7 + $d8 + $d9 + $d10 
+
+  let $e4 := $c4 + $d4
+  let $e5 := $c5 + $d5
+  let $e6 := $c6 + $d6
+  let $e7 := $c7 + $d7
+  let $e8 := $c8 + $d8
+  let $e9 := $c9 + $d9
+  let $e10 := $c10 + $d10
+  
+  let $e11 := $e4 + $e5 + $e6 + $e7 + $e8 + $e9 + $e10 
+
+  let $c14 := xdmp:random(1000)
+  let $c15 := xdmp:random(1000)
+  let $c16 := xdmp:random(1000)
+  let $c17 := xdmp:random(1000)
+
+  let $c18 := $c14 + $c15 + $c16 + $c17
+  let $c19 := $c11 - $c18
+
+  let $d14 := xs:integer($c14 div 12)
+  let $d15 := xs:integer($c15 div 12)
+  let $d16 := xs:integer($c16 div 12)
+  let $d17 := xs:integer($c17 div 12)
+  
+  let $d18 := $d14 + $d15 + $d16 + $d17
+  let $d19 := $d11 - $d18
+
+  let $e14 := $c14 + $d14
+  let $e15 := $c15 + $d15
+  let $e16 := $c16 + $d16
+  let $e17 := $c17 + $d17
+
+  let $e18 := $e14 + $e15 + $e16 + $e17
+  let $e19 := $e11 - $e18
+
+  let $c22 := xdmp:random(1000)
+  let $c23 := xdmp:random(1000)
+  let $c24 := xdmp:random(10000)
+  let $c25 := xdmp:random(1000)
+  let $c26 := xdmp:random(1000)
+  let $c27 := xdmp:random(1000)
+  let $c28 := xdmp:random(1000)
+  let $c29 := xdmp:random(1000)
+
+  let $c30 := $c22 + $c23 + $c24 + $c25 + $c26 + $c27 + $c28 + $c29
+
+  let $d22 := xs:integer($c22 div 12)
+  let $d23 := xs:integer($c23 div 12)
+  let $d24 := xs:integer($c24 div 12)
+  let $d25 := xs:integer($c25 div 12)
+  let $d26 := xs:integer($c26 div 12)
+  let $d27 := xs:integer($c27 div 12)
+  let $d28 := xs:integer($c28 div 12)
+  let $d29 := xs:integer($c29 div 12)
+
+  let $d30 := $d22 + $d23 + $d24 + $d25 + $d26 + $d27 + $d28 + $d29
+
+  let $e22 := $c22 + $d22
+  let $e23 := $c23 + $d23
+  let $e24 := $c24 + $d24
+  let $e25 := $c25 + $d25
+  let $e26 := $c26 + $d26
+  let $e27 := $c27 + $d27
+  let $e28 := $c28 + $d28
+  let $e29 := $c29 + $d29
+
+  let $e30 := $e22 + $e23 + $e24 + $e25 + $e26 + $e27 + $e28 + $e29
+
+  let $c31 := xdmp:random(100000)
+  let $valueOfExemptions := xdmp:random(10000)
+  let $numAllowableExemptions := 5
+
+  let $e32 := fn:max(($e30, $c31))
+  let $e34 := $valueOfExemptions * $numAllowableExemptions
+  let $e35 := $e34 + $e32
+  let $e36 := fn:abs($e19 - $e35)
+
+  let $calcTaxBracket := ingest:getTaxBracket($e36)
+  
+  let $itemizedDeductionPct := xs:integer(xs:float($e30 div $e19) * 100)
+
+  let $doc :=
+    element { "taxPlan" }
+    {
+      element { "grossIncome" }
+      {
+        element { "actual" }
+        {
+          element { "c4" }  { $c4 },
+          element { "c5" }  { $c5 },
+          element { "c6" }  { $c6 },
+          element { "c7" }  { $c7 },
+          element { "c8" }  { $c8 },
+          element { "c9" }  { $c9 },
+          element { "c10" }  { $c10 },
+          element { "c11" }  { $c11 }
+        },
+        element { "estimated" }
+        {
+          element { "yearEnd" }
+          {
+            element { "d4" }  { $d4 },
+            element { "d5" }  { $d5 },
+            element { "d6" }  { $d6 },
+            element { "d7" }  { $d7 },
+            element { "d8" }  { $d8 },
+            element { "d9" }  { $d9 },
+            element { "d10" }  { $d10 },
+            element { "d11" }  { $d11 }
+          },
+          element { "fullYear" }
+          {
+            element { "e4" }  { $e4 },
+            element { "e5" }  { $e5 },
+            element { "e6" }  { $e6 },
+            element { "e7" }  { $e7 },
+            element { "e8" }  { $e8 },
+            element { "e9" }  { $e9 },
+            element { "e10" }  { $e10 },
+            element { "e11" }  { $e11 }
+          }
+        }
+      },
+      element { "adjGrossIncome" }
+      {
+        element { "actual" }
+        {
+          element { "c14" }  { $c14 },
+          element { "c15" }  { $c15 },
+          element { "c16" }  { $c16 },
+          element { "c17" }  { $c17 },
+          element { "c18" }  { $c18 },
+          element { "c19" }  { $c19 }
+        },
+        element { "estimated" }
+        {
+          element { "yearEnd" }
+          {
+            element { "d14" }  { $d14 },
+            element { "d15" }  { $d15 },
+            element { "d16" }  { $d16 },
+            element { "d17" }  { $d17 },
+            element { "d18" }  { $d18 },
+            element { "d19" }  { $d19 }
+          },
+          element { "fullYear" }
+          {
+            element { "e14" }  { $e14 },
+            element { "e15" }  { $e15 },
+            element { "e16" }  { $e16 },
+            element { "e17" }  { $e17 },
+            element { "e18" }  { $e18 },
+            element { "e19" }  { $e19 }
+          }
+        }
+      },
+      element { "allowableItemizedDeductions" }
+      {
+        element { "actual" }
+        {
+          element { "c22" }  { $c22 },
+          element { "c23" }  { $c23 },
+          element { "c24" }  { $c24 },
+          element { "c25" }  { $c25 },
+          element { "c26" }  { $c26 },
+          element { "c27" }  { $c27 },
+          element { "c28" }  { $c28 },
+          element { "c29" }  { $c29 },
+          element { "c30" }  { $c30 },
+          element { "c31" }  { $c31 },
+          element { "c33" }  { $valueOfExemptions },
+          element { "c34" }  { $numAllowableExemptions }
+        },
+        element { "estimated" }
+        {
+          element { "yearEnd" }
+          {
+            element { "d22" }  { $d22 },
+            element { "d23" }  { $d23 },
+            element { "d24" }  { $d24 },
+            element { "d25" }  { $d25 },
+            element { "d26" }  { $d26 },
+            element { "d27" }  { $d27 },
+            element { "d28" }  { $d28 },
+            element { "d29" }  { $d29 },
+            element { "d30" }  { $d30 }
+          },
+          element { "fullYear" }
+          {
+            element { "e22" }  { $e22 },
+            element { "e23" }  { $e23 },
+            element { "e24" }  { $e24 },
+            element { "e25" }  { $e25 },
+            element { "e26" }  { $e26 },
+            element { "e27" }  { $e27 },
+            element { "e28" }  { $e28 },
+            element { "e29" }  { $e29 },
+            element { "e30" }  { $e30 },
+            element { "e32" }  { $e32 },
+            element { "e34" }  { $e34 },
+            element { "e35" }  { $e35 },
+            element { "e36" }  { $e36 },
+            element { "e37" }  { $calcTaxBracket },
+            element { "e38" }  { xs:integer($e36 * .85) },
+            element { "e39" }  { ingest:getTargetTaxBracket($calcTaxBracket) }
+          },
+          element { "itemizedDeductionPct" } { $itemizedDeductionPct }
+        }
+      }
+    }
+
+   return $doc
+};
+
 declare function ingest:getFilingDate()
 {
   let $dates :=
@@ -428,7 +731,16 @@ declare function ingest:expandDoc($doc as node(), $table as map:map)
  :
  : @param $zipfile
  :)
-declare function ingest:extractSpreadsheetData($user as xs:string, $excelFile as node(), $fileUri as xs:string)
+declare function ingest:extractSpreadsheetData(
+  $userFullName as xs:string,
+  $user as xs:string,
+  $excelFile as node(),
+  $taxRate as xs:decimal,
+  $deductionPct as xs:decimal,
+  $totalGrossInc as xs:decimal,
+  $adjGrossInc as xs:decimal,
+  $fileDate as xs:string,
+  $fileUri as xs:string)
 {
   let $exclude :=
   (
@@ -591,14 +903,19 @@ declare function ingest:extractSpreadsheetData($user as xs:string, $excelFile as
     {
       element { fn:QName($NS, "meta") }
       {
-        element { fn:QName($NS, "type") }      { "workbook" },
-        element { fn:QName($NS, "user") }      { $user },
-        element { fn:QName($NS, "client") }    { "Thomson Reuters" },
-        element { fn:QName($NS, "creator") }   { map:get($table, "docProps/core.xml")/core:coreProperties/dc:creator/text() },
-        element { fn:QName($NS, "file") }      { $fileUri },
+        element { fn:QName($NS, "type") }           { "workbook" },
+        element { fn:QName($NS, "user") }           { $userFullName },
+        element { fn:QName($NS, "client") }         { "Thomson Reuters" },
+        element { fn:QName($NS, "creator") }        { map:get($table, "docProps/core.xml")/core:coreProperties/dc:creator/text() },
+        element { fn:QName($NS, "file") }           { $fileUri },
+        element { fn:QName($NS, "fileDate") }       { $fileDate },
+        element { fn:QName($NS, "taxBracket") }     { $taxRate * 100 },
+        element { fn:QName($NS, "deductionPct") }   { $deductionPct },
+        element { fn:QName($NS, "totalGrossInc") }  { $totalGrossInc },
+        element { fn:QName($NS, "adjGrossInc") }    { $adjGrossInc },
         element { fn:QName($NS, "lastModifiedBy") } { map:get($table, "docProps/core.xml")/core:coreProperties/core:lastModifiedBy/text() },
-        element { fn:QName($NS, "created") }   { map:get($table, "docProps/core.xml")/core:coreProperties/dcterms:created/text() },
-        element { fn:QName($NS, "modified") }  { map:get($table, "docProps/core.xml")/core:coreProperties/dcterms:modified/text() }
+        element { fn:QName($NS, "created") }        { map:get($table, "docProps/core.xml")/core:coreProperties/dcterms:created/text() },
+        element { fn:QName($NS, "modified") }       { map:get($table, "docProps/core.xml")/core:coreProperties/dcterms:modified/text() }
       },
       element { fn:QName($NS, "feed") }
       {

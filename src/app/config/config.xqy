@@ -97,22 +97,6 @@ declare variable $c:REST-SEARCH-OPTIONS :=
         <facet-option>limit=10</facet-option>
       </range>
     </constraint>
-    <constraint name="EndingBalances">
-      <range type="xs:float">
-        <bucket ge="9000" name="9000s">9000s</bucket>
-        <bucket lt="9000" ge="8000" name="8000s">8000s</bucket>
-        <bucket lt="8000" ge="7000" name="7000s">7000s</bucket>
-        <bucket lt="7000" ge="6000" name="6000s">6000s</bucket>
-        <bucket lt="6000" ge="5000" name="5000s">5000s</bucket>
-        <bucket lt="5000" ge="4000" name="4000s">4000s</bucket>
-        <bucket lt="4000" ge="3000" name="3000s">3000s</bucket>
-        <bucket lt="3000" ge="2000" name="2000s">2000s</bucket>
-        <bucket lt="1000" name="1000s">1000s</bucket>
-        <element ns="http://tax.thomsonreuters.com" name="endingBalance"/>
-        <facet-option>descending</facet-option>
-        <facet-option>limit=10</facet-option>
-      </range>
-    </constraint>
     <constraint name="types">
       <range type="xs:string">
         <element ns="http://tax.thomsonreuters.com" name="type"/>
@@ -201,6 +185,146 @@ declare variable $c:SEARCH-OPTIONS :=
       <term-option>case-insensitive</term-option>
     </term>
     <additional-query>{cts:and-query(cts:collection-query(("RESTful", "customer", "order", "origin", "spreadsheet")))}</additional-query>
+    <constraint name="taxBrackets">
+      <range type="xs:decimal">
+        <element ns="http://tax.thomsonreuters.com" name="taxBracket"/>
+        <facet-option>descending</facet-option>
+        <facet-option>limit=10</facet-option>
+      </range>
+    </constraint>
+    <constraint name="totalGrossInc">
+      <range type="xs:decimal">
+        <bucket ge="0" name="9999s">10,000s</bucket>
+        <bucket lt="100000" ge="10000" name="100000s">100,000s</bucket>
+        <bucket lt="200000" ge="100000" name="200000s">200,000s</bucket>
+        <bucket lt="300000" ge="200000" name="300000s">300,000s</bucket>
+        <bucket lt="400000" ge="300000" name="400000s">400,000s</bucket>
+        <bucket lt="500000" name="500000s">500,000s</bucket>
+        <element ns="http://tax.thomsonreuters.com" name="totalGrossInc"/>
+        <facet-option>descending</facet-option>
+        <facet-option>limit=10</facet-option>
+      </range>
+    </constraint>
+    <constraint name="adjGrossInc">
+      <range type="xs:decimal">
+        <bucket ge="0" name="9999s">10,000s</bucket>
+        <bucket lt="100000" ge="10000" name="100000s">100,000s</bucket>
+        <bucket lt="200000" ge="100000" name="200000s">200,000s</bucket>
+        <bucket lt="300000" ge="200000" name="300000s">300,000s</bucket>
+        <bucket lt="400000" ge="300000" name="400000s">400,000s</bucket>
+        <bucket lt="500000" name="500000s">500,000s</bucket>
+        <element ns="http://tax.thomsonreuters.com" name="adjGrossInc"/>
+        <facet-option>descending</facet-option>
+        <facet-option>limit=10</facet-option>
+      </range>
+    </constraint>
+    <constraint name="deductionPct">
+      <range type="xs:decimal">
+        <element ns="http://tax.thomsonreuters.com" name="deductionPct"/>
+        <facet-option>descending</facet-option>
+        <facet-option>limit=10</facet-option>
+      </range>
+    </constraint>
+    <constraint name="users">
+      <range type="xs:string">
+        <element ns="http://tax.thomsonreuters.com" name="user"/>
+        <facet-option>descending</facet-option>
+        <facet-option>limit=10</facet-option>
+      </range>
+    </constraint>
+    <constraint name="id">
+      <word>
+        <element ns="http://tax.thomsonreuters.com" name="id"/>
+      </word>
+    </constraint>
+    <constraint name="type">
+      <word>
+        <element ns="http://tax.thomsonreuters.com" name="type"/>
+      </word>
+    </constraint>
+    <constraint name="user">
+      <word>
+        <element ns="http://tax.thomsonreuters.com" name="user"/>
+      </word>
+    </constraint>
+    <constraint name="dname">
+      <word>
+        <element ns="http://tax.thomsonreuters.com" name="dname"/>
+      </word>
+    </constraint>
+    <constraint name="dvalue">
+      <word>
+        <element ns="http://tax.thomsonreuters.com" name="dvalue"/>
+      </word>
+    </constraint>
+    <transform-results apply="snippet">
+      <preferred-elements>
+        <element ns="http://tax.thomsonreuters.com" name="type"/>
+        <element ns="http://tax.thomsonreuters.com" name="user"/>
+        <element ns="http://tax.thomsonreuters.com" name="rowLabel"/>
+        <element ns="http://tax.thomsonreuters.com" name="columnLabel"/>
+        <element ns="http://tax.thomsonreuters.com" name="dname"/>
+      </preferred-elements>
+    </transform-results>
+    <operator name="results">
+      <state name="compact">
+        <transform-results apply="metadata-snippet">
+          <preferred-elements>
+            <element ns="http://tax.thomsonreuters.com" name="type"/>
+            <element ns="http://tax.thomsonreuters.com" name="id"/>
+            <element ns="http://tax.thomsonreuters.com" name="importFileId"/>
+            <element ns="http://tax.thomsonreuters.com" name="user"/>
+            <element ns="http://tax.thomsonreuters.com" name="rowLabel"/>
+            <element ns="http://tax.thomsonreuters.com" name="columnLabel"/>
+            <element ns="http://tax.thomsonreuters.com" name="dname"/>
+          </preferred-elements>
+          <per-match-tokens>30</per-match-tokens>
+          <max-matches>4</max-matches>
+          <max-snippet-chars>200</max-snippet-chars>
+        </transform-results>
+      </state>
+      <state name="detailed">
+        <transform-results apply="metadata-snippet">
+          <preferred-elements>
+            <element ns="http://tax.thomsonreuters.com" name="type"/>
+            <element ns="http://tax.thomsonreuters.com" name="id"/>
+            <element ns="http://tax.thomsonreuters.com" name="importFileId"/>
+            <element ns="http://tax.thomsonreuters.com" name="user"/>
+            <element ns="http://tax.thomsonreuters.com" name="rowLabel"/>
+            <element ns="http://tax.thomsonreuters.com" name="columnLabel"/>
+            <element ns="http://tax.thomsonreuters.com" name="dname"/>
+          </preferred-elements>
+          <per-match-tokens>30</per-match-tokens>
+          <max-matches>4</max-matches>
+          <max-snippet-chars>200</max-snippet-chars>
+        </transform-results>
+      </state>
+    </operator>
+    <return-results>true</return-results>
+    <return-query>true</return-query>
+  </options>;
+
+declare variable $c:SEARCH-OPTIONS-ORIG :=
+  <options xmlns="http://marklogic.com/appservices/search">
+    <search-option>unfiltered</search-option>
+    <term>
+      <term-option>case-insensitive</term-option>
+    </term>
+    <additional-query>{cts:and-query(cts:collection-query(("RESTful", "customer", "order", "origin", "spreadsheet")))}</additional-query>
+    <constraint name="taxBrackets">
+      <range type="xs:decimal">
+        <element ns="http://tax.thomsonreuters.com" name="taxBracket"/>
+        <facet-option>descending</facet-option>
+        <facet-option>limit=10</facet-option>
+      </range>
+    </constraint>
+    <constraint name="fileDates">
+      <range type="xs:date">
+        <element ns="http://tax.thomsonreuters.com" name="fileDate"/>
+        <facet-option>descending</facet-option>
+        <facet-option>limit=10</facet-option>
+      </range>
+    </constraint>
     <constraint name="types">
       <range type="xs:string">
         <element ns="http://tax.thomsonreuters.com" name="type"/>
@@ -263,10 +387,6 @@ declare variable $c:SEARCH-OPTIONS :=
             <element ns="http://tax.thomsonreuters.com" name="type"/>
             <element ns="http://tax.thomsonreuters.com" name="id"/>
             <element ns="http://tax.thomsonreuters.com" name="importFileId"/>
-            <element ns="http://tax.thomsonreuters.com" name="importedUnitCode"/>
-            <element ns="http://tax.thomsonreuters.com" name="importedAccountCode"/>
-            <element ns="http://tax.thomsonreuters.com" name="beginningBalance"/>
-            <element ns="http://tax.thomsonreuters.com" name="endingBalance"/>
             <element ns="http://tax.thomsonreuters.com" name="user"/>
             <element ns="http://tax.thomsonreuters.com" name="rowLabel"/>
             <element ns="http://tax.thomsonreuters.com" name="columnLabel"/>
@@ -283,10 +403,6 @@ declare variable $c:SEARCH-OPTIONS :=
             <element ns="http://tax.thomsonreuters.com" name="type"/>
             <element ns="http://tax.thomsonreuters.com" name="id"/>
             <element ns="http://tax.thomsonreuters.com" name="importFileId"/>
-            <element ns="http://tax.thomsonreuters.com" name="importedUnitCode"/>
-            <element ns="http://tax.thomsonreuters.com" name="importedAccountCode"/>
-            <element ns="http://tax.thomsonreuters.com" name="beginningBalance"/>
-            <element ns="http://tax.thomsonreuters.com" name="endingBalance"/>
             <element ns="http://tax.thomsonreuters.com" name="user"/>
             <element ns="http://tax.thomsonreuters.com" name="rowLabel"/>
             <element ns="http://tax.thomsonreuters.com" name="columnLabel"/>
@@ -307,16 +423,19 @@ declare variable $c:SEARCH-OPTIONS :=
  :)
 declare variable $c:LABELS :=
   <labels xmlns="http://marklogic.com/xqutils/labels">
-    <label key="importedUnitCode">
-      <value xml:lang="en">Imported Unit Code</value>
+    <label key="taxBrackets">
+      <value xml:lang="en">Tax Bracket</value>
     </label>
-    <label key="importedAccountCode">
-      <value xml:lang="en">Imported Account Code</value>
-    </label>
-    <label key="endingBalances">
-      <value xml:lang="en">Ending Balances</value>
+    <label key="fileDates">
+      <value xml:lang="en">File Date</value>
     </label>
     <label key="types">
-      <value xml:lang="en">Types</value>
+      <value xml:lang="en">Type</value>
+    </label>
+    <label key="users">
+      <value xml:lang="en">User</value>
+    </label>
+    <label key="dnames">
+      <value xml:lang="en">Field Name</value>
     </label>
   </labels>;

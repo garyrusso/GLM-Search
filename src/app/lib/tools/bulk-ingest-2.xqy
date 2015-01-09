@@ -22,14 +22,20 @@ let $padUserNum := ingest:padNum($userNum)
 
 let $docs :=
   for $nDoc in ($start to $end)
-    let $user := "janedoe"||$padUserNum
-    let $userFullName := "Jane Doe "||$padUserNum
-    let $dir     := "/user/"||$user||"/"
+    let $user          := "janedoe"||$padUserNum
+    let $userFullName  := "Jane Doe "||$padUserNum
+    let $dir           := "/user/"||$user||"/"
     
-    let $fileUri := ingest:generateFileUri($user, $zipFile, $nDoc)
-    let $filingDate := ingest:getFilingDate()
-    let $binDoc  := ssheet:createSpreadsheetFile($userFullName, $filingDate/days/text(), $fileUri)
-    let $newDoc  := ingest:extractSpreadsheetData($user, $binDoc, $fileUri)
+    let $fileUri       := ingest:generateFileUri($user, $zipFile, $nDoc)
+    let $filingDate    := ingest:getFilingDate()
+    let $taxPlanDoc    := ingest:buildTaxPlanDoc()
+    let $taxRate       := xs:decimal($taxPlanDoc/allowableItemizedDeductions/estimated/fullYear/e37/text())
+    let $deductionPct  := xs:decimal($taxPlanDoc/allowableItemizedDeductions/estimated/itemizedDeductionPct/text())
+    let $totalGrossInc := xs:decimal($taxPlanDoc/grossIncome/estimated/fullYear/e11/text())
+    let $adjGrossInc   := xs:decimal($taxPlanDoc/adjGrossIncome/estimated/fullYear/e19/text())
+
+    let $binDoc  := ssheet:createSpreadsheetFile($userFullName, $filingDate/days/text(), $fileUri, $taxPlanDoc)
+    let $newDoc  := ingest:extractSpreadsheetData($userFullName, $user, $binDoc, $taxRate, $deductionPct, $totalGrossInc, $adjGrossInc, $filingDate/isoDate/text(), $fileUri)
     let $uri     := $dir||xdmp:hash64($newDoc)||".xml"
     let $log     := xdmp:log("111 ------ $fileUri: "||$fileUri)
     
