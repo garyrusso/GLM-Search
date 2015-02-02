@@ -32,10 +32,10 @@ let $docs :=
     let $taxRate       := xs:decimal($taxPlanDoc/allowableItemizedDeductions/estimated/fullYear/e37/text())
     let $deductionPct  := xs:decimal($taxPlanDoc/allowableItemizedDeductions/estimated/itemizedDeductionPct/text())
     let $totalGrossInc := xs:decimal($taxPlanDoc/grossIncome/estimated/fullYear/e11/text())
-    let $adjGrossInc   := xs:decimal($taxPlanDoc/adjGrossIncome/estimated/fullYear/e19/text())
+    let $taxableInc    := xs:decimal($taxPlanDoc/allowableItemizedDeductions/estimated/fullYear/e36/text())
 
     let $binDoc  := ssheet:createSpreadsheetFile($userFullName, $filingDate/days/text(), $fileUri, $taxPlanDoc)
-    let $newDoc  := ingest:extractSpreadsheetData($userFullName, $user, $binDoc, $taxRate, $deductionPct, $totalGrossInc, $adjGrossInc, $filingDate/isoDate/text(), $fileUri)
+    let $newDoc  := ingest:extractSpreadsheetData($userFullName, $user, $binDoc, $taxRate, $deductionPct, $totalGrossInc, $taxableInc, $filingDate/isoDate/text(), $fileUri)
     let $uri     := $dir||xdmp:hash64($newDoc)||".xml"
     let $log     := xdmp:log("111 ------ $fileUri: "||$fileUri)
     

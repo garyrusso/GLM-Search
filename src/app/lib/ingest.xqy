@@ -148,10 +148,10 @@ declare function ingest:getTaxBracket($income as xs:decimal) as xs:decimal
       if ($income ge 186351 and $income lt 405101) then
         0.33
       else
-      if ($income ge 405101 and $income lt 457601) then
+      if ($income ge 405101 and $income lt 406751) then
         0.35
       else
-      if ($income ge 457601) then
+      if ($income ge 406751) then
         0.396
       else
         0.396
@@ -738,7 +738,7 @@ declare function ingest:extractSpreadsheetData(
   $taxRate as xs:decimal,
   $deductionPct as xs:decimal,
   $totalGrossInc as xs:decimal,
-  $adjGrossInc as xs:decimal,
+  $taxableInc as xs:decimal,
   $fileDate as xs:string,
   $fileUri as xs:string)
 {
@@ -912,7 +912,7 @@ declare function ingest:extractSpreadsheetData(
         element { fn:QName($NS, "taxBracket") }     { $taxRate * 100 },
         element { fn:QName($NS, "deductionPct") }   { $deductionPct },
         element { fn:QName($NS, "totalGrossInc") }  { $totalGrossInc },
-        element { fn:QName($NS, "adjGrossInc") }    { $adjGrossInc },
+        element { fn:QName($NS, "taxableInc") }     { $taxableInc },
         element { fn:QName($NS, "lastModifiedBy") } { map:get($table, "docProps/core.xml")/core:coreProperties/core:lastModifiedBy/text() },
         element { fn:QName($NS, "created") }        { map:get($table, "docProps/core.xml")/core:coreProperties/dcterms:created/text() },
         element { fn:QName($NS, "modified") }       { map:get($table, "docProps/core.xml")/core:coreProperties/dcterms:modified/text() }

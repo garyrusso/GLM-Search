@@ -205,7 +205,7 @@ declare variable $c:SEARCH-OPTIONS :=
         <facet-option>limit=10</facet-option>
       </range>
     </constraint>
-    <constraint name="adjGrossInc">
+    <constraint name="taxableInc">
       <range type="xs:decimal">
         <bucket ge="0" name="9999s">10,000s</bucket>
         <bucket lt="100000" ge="10000" name="100000s">100,000s</bucket>
@@ -213,7 +213,7 @@ declare variable $c:SEARCH-OPTIONS :=
         <bucket lt="300000" ge="200000" name="300000s">300,000s</bucket>
         <bucket lt="400000" ge="300000" name="400000s">400,000s</bucket>
         <bucket lt="500000" name="500000s">500,000s</bucket>
-        <element ns="http://tax.thomsonreuters.com" name="adjGrossInc"/>
+        <element ns="http://tax.thomsonreuters.com" name="taxableInc"/>
         <facet-option>descending</facet-option>
         <facet-option>limit=10</facet-option>
       </range>
