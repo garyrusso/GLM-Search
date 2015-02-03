@@ -10,7 +10,7 @@ declare variable $pathIdx := "/tax:origin/tax:feed/tax:price//*";
 
 (:
  :)
-declare function tr:getValuesWithinRange($min as xs:decimal, $max as xs:decimal) as node()*
+declare function tr:getValuesWithDetailsWithinRange($min as xs:decimal, $max as xs:decimal) as node()*
 {
   let $values  :=
     for $val in cts:values(cts:path-reference($pathIdx))
@@ -35,7 +35,8 @@ declare function tr:getValuesWithinRange($min as xs:decimal, $max as xs:decimal)
               {
                 for $item in $results//*/text()
                   let $path  := xdmp:path($item/..)
-                    where $item eq $value
+                  let $itemToCompare := xs:decimal(fn:replace($item,",",""))
+                    where $itemToCompare eq $value
                       return
                         element { "item" }
                         {
@@ -59,7 +60,44 @@ declare function tr:getValuesWithinRange($min as xs:decimal, $max as xs:decimal)
       element { "elapsedTime" }      { xdmp:elapsed-time() },
       element { "uniqueValueCount" } { fn:count($values) },
       element { "values" }           { fn:string-join(xs:string($values), " ") },
+      element { "sum" }              { fn:sum($values) },
+      element { "avg" }              { fn:avg($values) },
+      element { "min" }              { fn:min($values) },
+      element { "max" }              { fn:max($values) },
+      element { "stddev" }           { math:stddev($values) },
       $valuesDoc
+    }
+
+  return $response
+};
+
+(:
+ :)
+declare function tr:getValuesWithinRange($min as xs:decimal, $max as xs:decimal) as node()*
+{
+  let $values  :=
+    for $val in cts:values(cts:path-reference($pathIdx))
+      where $val ge $min and $val le $max
+        return
+          $val
+  
+  let $response :=
+    element { "response" }
+    {
+      element { "input" }
+      {
+        (: element { "query" }          { "importedUnitCode:RU0073* AND endingBalance:5896.*" }, :)
+        element { "min" }            { $min },
+        element { "max" }            { $max }
+      },
+      element { "elapsedTime" }      { xdmp:elapsed-time() },
+      element { "uniqueValueCount" } { fn:count($values) },
+      element { "values" }           { fn:string-join(xs:string($values), " ") },
+      element { "sum" }              { fn:sum($values) },
+      element { "avg" }              { fn:avg($values) },
+      element { "min" }              { fn:min($values) },
+      element { "max" }              { fn:max($values) },
+      element { "stddev" }           { math:stddev($values) }
     }
 
   return $response
@@ -81,12 +119,26 @@ function tr:get(
   $params  as map:map
 ) as document-node()*
 {
-  let $q   := map:get($params, "q")
-  let $min := xs:decimal(map:get($params, "min"))
-  let $max := xs:decimal(map:get($params, "max"))
+  let $q          := map:get($params, "q")
+  let $min        := xs:decimal(map:get($params, "min"))
+  let $max        := xs:decimal(map:get($params, "max"))
+  let $showDetail := map:get($params, "details")
   
-  let $doc := tr:getValuesWithinRange($min, $max)
+  let $details    :=
+    if (fn:empty($showDetail)) then
+      fn:false()
+    else
+    if ($showDetail eq "true") then
+      fn:true()
+    else
+      fn:false()
 
+  let $doc     :=
+    if ($details eq fn:true()) then
+      tr:getValuesWithDetailsWithinRange($min, $max)
+    else
+      tr:getValuesWithinRange($min, $max)
+      
   return
     document
     {
