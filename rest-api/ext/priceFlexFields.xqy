@@ -12,7 +12,7 @@ declare variable $pathIdx := "/tax:origin/tax:feed/tax:price//*";
  :)
 declare function tr:getElementNames() as node()*
 {
-  let $values  := xs:string(cts:values(cts:path-reference($pathIdx)))
+  let $values  := xs:string(cts:values(cts:path-reference($pathIdx))) [1 to 100000]
   
   let $query :=
       cts:and-query((
@@ -20,7 +20,7 @@ declare function tr:getElementNames() as node()*
       ))
   
   let $results := cts:search(/tax:origin/tax:feed/tax:price, $query)
-  let $fields  := xs:string($results[1 to 4000]//fn:node-name(.))
+  let $fields  := xs:string($results[1 to 100]//fn:node-name(.))
   let $list    := fn:distinct-values($fields)
   
   let $orderedList :=
