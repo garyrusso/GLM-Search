@@ -103,7 +103,14 @@ declare function local:transform-snippet($nodes as node()*)
                 }
                 <tr>
                   <td valign="top" colspan="3">
-                    {local:transform-snippet(($n/@*, $n/node()))}
+                  {
+                    let $tempSnippets := fn:string-join($n/node()/text(), ", ")
+                    let $snippetText  := fn:tokenize($tempSnippets, ", ") [1 to 10]
+                    return
+                      fn:string-join($snippetText, ", ")
+                    
+                    (: local:transform-snippet(($n/@*, $n/node())) :)
+                  }
                   </td>
                 </tr>
               </table>

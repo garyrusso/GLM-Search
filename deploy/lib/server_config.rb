@@ -181,7 +181,7 @@ class ServerConfig < MLClient
     server_version = find_arg(['--server-version'])
 
     # Check for required --server-version argument value
-    if (!server_version.present? || server_version == '--server-version' || !(%w(4 5 6 7).include? server_version))
+    if (!server_version.present? || server_version == '--server-version' || !(%w(4 5 6 7 8).include? server_version))
       server_version = prompt_server_version
     end
 
@@ -266,9 +266,9 @@ class ServerConfig < MLClient
   def self.prompt_server_version
     puts 'Required option --server-version=[version] not specified with valid value.
 
-What is the version number of the target MarkLogic server? [4, 5, 6, or 7]'
+What is the version number of the target MarkLogic server? [5, 6, 7, or 8]'
     server_version = $stdin.gets.chomp.to_i
-    server_version = 6 if server_version == 0
+    server_version = 7 if server_version == 0
     server_version
   end
 
@@ -389,7 +389,7 @@ What is the version number of the target MarkLogic server? [4, 5, 6, or 7]'
       r = execute_query_4 query, properties
     elsif @server_version == 5 || @server_version == 6
       r = execute_query_5 query, properties
-    else
+    else # 7 or 8
       r = execute_query_7 query, properties
     end
 
@@ -400,18 +400,42 @@ What is the version number of the target MarkLogic server? [4, 5, 6, or 7]'
 
   def restart
     group = ARGV.shift
-    if group
-      logger.info "Restarting MarkLogic Server group #{group} on #{@hostname}"
+    # Exclude any argument passed from command line.
+    if group && group.index("-") == 0
+      group = nil
+    end
+
+    if group && group == "cluster"
+      logger.info "Restarting MarkLogic Server cluster of #{@hostname}"
+    elsif group
+      logger.info "Restarting MarkLogic Server group #{group}"
     else
-      logger.info "Restarting MarkLogic Server on #{@hostname}"
+      logger.info "Restarting MarkLogic Server group of #{@hostname}"
     end
     logger.debug "this: #{self}"
     setup = File.read ServerConfig.expand_path("#{@@path}/lib/xquery/setup.xqy")
     r = execute_query %Q{#{setup} setup:do-restart("#{group}")}
+    logger.debug "code: #{r.code.to_i}"
+
+    r.body = parse_json(r.body)
+    logger.info r.body
   end
 
   def config
-    logger.info get_config
+    setup = File.read ServerConfig.expand_path("#{@@path}/lib/xquery/setup.xqy")
+    r = execute_query %Q{
+      #{setup}
+      try {
+        setup:rewrite-config(#{get_config})
+      } catch($ex) {
+        xdmp:log($ex),
+        fn:concat($ex/err:format-string/text(), '&#10;See MarkLogic Server error log for more details.')
+      }
+    }
+    logger.debug "code: #{r.code.to_i}"
+
+    r.body = parse_json(r.body)
+    logger.info r.body
   end
 
   def bootstrap
@@ -526,14 +550,20 @@ In order to proceed please type: #{expected_response}
       end
     end
 
-    logger.debug %Q{#{setup} setup:do-wipe(#{config})}
+    #logger.debug %Q{#{setup} setup:do-wipe(#{config})}
     r = execute_query %Q{#{setup} setup:do-wipe(#{config})}
     logger.debug "code: #{r.code.to_i}"
 
     r.body = parse_json(r.body)
     logger.debug r.body
 
-    if r.body.match("<error:error")
+    if r.body.match("RESTART_NOW")
+      logger.warn "***************************************"
+      logger.warn "*** WIPE NOT COMPLETE, RESTART REQUIRED"
+      logger.warn "***************************************"
+      logger.info "... NOTE: RERUN WIPE AFTER RESTART TO COMPLETE!"
+      return false
+    elsif r.body.match("<error:error") || r.body.match("error log")
       logger.error r.body
       logger.error "... Wipe FAILED"
       return false
@@ -558,7 +588,7 @@ In order to proceed please type: #{expected_response}
       r.body = parse_json(r.body)
       logger.debug r.body
 
-      if r.body.match("<error:error")
+      if r.body.match("<error:error") || r.body.match("error log")
         logger.error r.body
         logger.info "... Validation ERROR"
         result = false
@@ -574,6 +604,8 @@ In order to proceed please type: #{expected_response}
     end
     result
   end
+
+  alias_method :validate, :validate_install
 
   def deploy
     what = ARGV.shift
@@ -669,14 +701,14 @@ In order to proceed please type: #{expected_response}
       else
         testTearDown = "&runteardown=true"
       end
-      r = go(%Q{http://#{@hostname}:#{@properties["ml.test-port"]}/test/list}, "get")
+      r = go(%Q{http://#{@hostname}:#{@properties["ml.test-port"]}/test/default.xqy?func=list}, "get")
       suites = []
       r.body.split(">").each do |line|
         suites << line.gsub(/.*suite path="([^"]+)".*/, '\1').strip if line.match("suite path")
       end
 
       suites.each do |suite|
-        r = go(%Q{http://#{@hostname}:#{@properties["ml.test-port"]}/test/run?suite=#{url_encode(suite)}&format=junit#{suiteTearDown}#{testTearDown}}, "get")
+        r = go(%Q{http://#{@hostname}:#{@properties["ml.test-port"]}/test/default.xqy?func=run&suite=#{url_encode(suite)}&format=junit#{suiteTearDown}#{testTearDown}}, "get")
         logger.info r.body
       end
     end
@@ -850,9 +882,9 @@ In order to proceed please type: #{expected_response}
 
       args = ARGV.join(" ")
 
-      runme = %Q{java -cp #{classpath} #{@properties['ml.mlcp-vmargs']} com.marklogic.contentpump.ContentPump #{args} #{connection_string}}
+      runme = %Q{java -cp "#{classpath}" #{@properties['ml.mlcp-vmargs']} com.marklogic.contentpump.ContentPump #{args} #{connection_string}}
     else
-      runme = %Q{java -cp #{classpath} com.marklogic.contentpump.ContentPump}
+      runme = %Q{java -cp "#{classpath}" com.marklogic.contentpump.ContentPump}
     end
 
     logger.debug runme
@@ -973,6 +1005,22 @@ In order to proceed please type: #{expected_response}
     end
   end
 
+  def settings
+    arg = ARGV.shift
+    if arg
+      setup = File.read ServerConfig.expand_path("#{@@path}/lib/xquery/setup.xqy")
+      r = execute_query %Q{#{setup} setup:list-settings("#{arg}")}
+      r.body = parse_json(r.body)
+      logger.info r.body
+    else
+      logger.info %Q{
+Usage: ml [env] settings [group|host|database|task-server|http-server|odbc-server|xdbc-server|webdav-server]
+
+Provides listings of various kinds of settings supported within ml-config.xml.
+      }
+    end
+  end
+  
 private
 
   def save_files_to_fs(target_db, target_dir)
@@ -1130,12 +1178,19 @@ private
     load_html_as_xml = @properties['ml.load-html-as-xml']
     load_js_as_binary = @properties['ml.load-js-as-binary']
     load_css_as_binary = @properties['ml.load-css-as-binary']
+    folders_to_ignore = @properties['ml.ignore-folders']
 
     modules_databases.each do |dest_db|
+      if dest_db == "filesystem"
+        logger.info "Skipping deployment of src to #{dest_db}.."
+        break
+      end
+      
       ignore_us = []
       ignore_us << "^#{test_dir}.*$" unless test_dir.blank? || deploy_tests?(dest_db)
       ignore_us << "^#{app_config_file}$"
       ignore_us << "^#{test_config_file}$"
+      ignore_us << "^#{folders_to_ignore}$" unless folders_to_ignore.blank?
 
       src_permissions = permissions(@properties['ml.app-role'], Roxy::ContentCapability::ER)
 
@@ -1325,11 +1380,13 @@ private
 
   def clean_content
     logger.info "Cleaning #{@properties['ml.content-db']} on #{@hostname}"
-    execute_query %Q{
+    r = execute_query %Q{
       for $id in xdmp:database-forests(xdmp:database("#{@properties['ml.content-db']}"))
       return
-        xdmp:forest-clear($id)
+        try { xdmp:forest-clear($id) } catch ($ignore) { fn:concat("Skipped forest ", xdmp:forest-name($id), "..") }
     }
+    r.body = parse_json(r.body)
+    logger.info r.body
   end
 
   def deploy_cpf
